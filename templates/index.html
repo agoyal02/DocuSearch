@@ -642,6 +642,14 @@
             font-size: 0.8em;
             font-family: monospace;
             font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .job-id-badge:hover {
+            background: #3d8bfe;
+            color: white;
+            text-decoration: none;
         }
         
         .job-status-badge {
@@ -723,6 +731,17 @@
         
         .metadata-value {
             color: #333;
+        }
+        
+        .metadata-value a {
+            color: #4facfe;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .metadata-value a:hover {
+            color: #3d8bfe;
+            text-decoration: underline;
         }
         
         .job-documents {
@@ -861,14 +880,43 @@
                     </label>
 
                     <div id="s3Inputs" style="display:none; margin-top:12px;">
-                        <input type="text" id="s3Bucket" placeholder="S3 Bucket (required)" style="width: 48%; padding:8px; margin-right: 8px;">
-                        <div style="font-size: 0.85em; color: #6c757d; margin: 6px 0 10px 0;">
-                            Recommended test bucket: <code>documents-papers</code>
+                        <div style="margin-bottom: 12px;">
+                            <label style="display:block; margin-bottom:4px; font-weight:500;">AWS Region:</label>
+                            <input type="text" id="awsRegion" placeholder="AWS Region" style="width: 100%; padding:8px; margin-bottom:4px;">
+                            <div style="font-size: 0.85em; color: #6c757d;">
+                                Recommended Test AWS Region: <code>us-east-1</code>
+                            </div>
                         </div>
-                        <input type="text" id="s3Prefix" placeholder="Prefix (optional)" style="width: 48%; padding:8px;">
-                        <div style="margin-top:10px; display:flex; gap:10px;">
-                            <button id="s3ProcessBtn" class="upload-btn">Process from S3</button>
+                        
+                        <div style="margin-bottom: 12px;">
+                            <label style="display:block; margin-bottom:4px; font-weight:500;">AWS Access Key ID:</label>
+                            <input type="text" id="awsAccessKeyId" placeholder="AWS Access Key ID" style="width: 100%; padding:8px; margin-bottom:4px;">
+                            <div style="font-size: 0.85em; color: #6c757d;">
+                                Recommended Test Access Key ID: <code>AKIA5J2SGFI6RTJWSD7I</code>
+                            </div>
                         </div>
+                        
+                        <div style="margin-bottom: 12px;">
+                            <label style="display:block; margin-bottom:4px; font-weight:500;">AWS Secret Access Key:</label>
+                            <input type="password" id="awsSecretAccessKey" placeholder="AWS Secret Access Key" style="width: 100%; padding:8px; margin-bottom:4px;">
+                            <div style="font-size: 0.85em; color: #6c757d;">
+                                Recommended Test Secret Key: <code>5A0r8JKJTtC8enKz8e3MJ3vt7TYqPKwauQkxwxWG</code>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 12px;">
+                            <label style="display:block; margin-bottom:4px; font-weight:500;">S3 Bucket Name:</label>
+                            <input type="text" id="s3Bucket" placeholder="S3 Bucket (required)" style="width: 100%; padding:8px; margin-bottom:4px;">
+                            <div style="font-size: 0.85em; color: #6c757d;">
+                                Recommended test bucket: <code>documents-papers</code>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 12px;">
+                            <label style="display:block; margin-bottom:4px; font-weight:500;">S3 Prefix (optional):</label>
+                            <input type="text" id="s3Prefix" placeholder="Prefix (optional)" style="width: 100%; padding:8px;">
+                        </div>
+                        
                         <div id="s3Status" style="margin-top:8px;"></div>
                     </div>
                 </div>
@@ -928,6 +976,10 @@
                         </div>
                     </div>
                     
+                    <!-- S3 Process Button (shown only when S3 is selected) -->
+                    <div id="s3ProcessSection" style="display:none; margin-top: 16px; padding-top: 12px; border-top: 1px solid #eee;">
+                        <button id="s3ProcessBtn" class="upload-btn">Process from S3</button>
+                    </div>
                     
                     <div class="upload-progress" id="uploadProgress">
                         <div class="job-status" id="jobStatus" style="display: none;">
@@ -970,7 +1022,7 @@
             <!-- Search Section -->
             <div class="search-section">
                 <h2>Search Documents</h2>
-                <input type="text" id="searchInput" class="search-input" placeholder="Enter your search query...">
+                <input type="text" id="searchInput" class="search-input" placeholder="Search document by Topic, Author, Title etc">
                 <button class="search-btn" onclick="searchDocuments()">Search</button>
                 <div id="searchResults"></div>
             </div>
@@ -987,15 +1039,58 @@
 
     <script>
         // Directory input change handler
+        // Function to clear job results and status messages
+        function clearJobResultsAndStatus() {
+            const jobResultsDiv = document.getElementById('jobResults');
+            const jobStatsDiv = document.getElementById('jobStats');
+            const jobActionsDiv = document.getElementById('jobActions');
+            const uploadStatusDiv = document.getElementById('uploadStatus');
+            const s3StatusDiv = document.getElementById('s3Status');
+            const jobStatusDiv = document.getElementById('jobStatus');
+            const selectedDirDiv = document.getElementById('selectedDirectory');
+            const directoryInput = document.getElementById('directoryInput');
+            
+            // Clear all job results content
+            if (jobResultsDiv) {
+                jobResultsDiv.innerHTML = `
+                    <h4>Job Results</h4>
+                    <div class="job-stats" id="jobStats">
+                        <!-- Stats will be populated by JavaScript -->
+                    </div>
+                    <div class="job-actions" id="jobActions">
+                        <!-- Actions will be populated by JavaScript -->
+                    </div>
+                `;
+                jobResultsDiv.style.display = 'none';
+            }
+            
+            // Clear status messages
+            if (uploadStatusDiv) uploadStatusDiv.innerHTML = '';
+            if (s3StatusDiv) s3StatusDiv.innerHTML = '';
+            if (jobStatusDiv) jobStatusDiv.style.display = 'none';
+            
+            // Clear directory selection display
+            if (selectedDirDiv) selectedDirDiv.style.display = 'none';
+            if (directoryInput) directoryInput.value = '';
+            
+            // Also clear individual sections as backup
+            if (jobStatsDiv) jobStatsDiv.innerHTML = '';
+            if (jobActionsDiv) jobActionsDiv.innerHTML = '';
+        }
+
         // Toggle S3 inputs visibility
         document.querySelectorAll('input[name="sourceType"]').forEach(r => {
             r.addEventListener('change', () => {
                 const isS3 = document.querySelector('input[name="sourceType"]:checked').value === 's3';
                 document.getElementById('s3Inputs').style.display = isS3 ? 'block' : 'none';
+                document.getElementById('s3ProcessSection').style.display = isS3 ? 'block' : 'none';
                 // Toggle local directory UI
                 document.getElementById('localInputs').style.display = isS3 ? 'none' : 'block';
                 document.getElementById('localHeading').style.display = isS3 ? 'none' : 'block';
                 document.getElementById('uploadBtn').style.display = isS3 ? 'none' : 'inline-block';
+                
+                // Clear job results and status when switching data sources
+                clearJobResultsAndStatus();
             });
         });
 
@@ -1222,6 +1317,9 @@
         document.getElementById('s3ProcessBtn').addEventListener('click', async function(e) {
             e.preventDefault();
             const s3Status = document.getElementById('s3Status');
+            const awsRegion = document.getElementById('awsRegion').value.trim();
+            const awsAccessKeyId = document.getElementById('awsAccessKeyId').value.trim();
+            const awsSecretAccessKey = document.getElementById('awsSecretAccessKey').value.trim();
             const bucket = document.getElementById('s3Bucket').value.trim();
             const prefix = document.getElementById('s3Prefix').value.trim();
 
@@ -1232,12 +1330,24 @@
                 s3Status.innerHTML = '<div class="error">Please select at least one metadata field to extract.</div>';
                 return;
             }
+            if (!awsRegion) {
+                s3Status.innerHTML = '<div class="error">Please enter AWS Region.</div>';
+                return;
+            }
+            if (!awsAccessKeyId) {
+                s3Status.innerHTML = '<div class="error">Please enter AWS Access Key ID.</div>';
+                return;
+            }
+            if (!awsSecretAccessKey) {
+                s3Status.innerHTML = '<div class="error">Please enter AWS Secret Access Key.</div>';
+                return;
+            }
             if (!bucket) {
                 s3Status.innerHTML = '<div class="error">Please enter an S3 bucket.</div>';
                 return;
             }
 
-            s3Status.innerHTML = '<div class="loading">Starting S3 processing...</div>';
+            s3Status.innerHTML = '<div class="loading" style="background: #e3f2fd; border: 1px solid #2196f3; border-radius: 4px; padding: 12px; margin: 8px 0; font-weight: 500;">🔄 Starting S3 processing...</div>';
             const jobStatusDiv = document.getElementById('jobStatus');
             const jobResultsDiv = document.getElementById('jobResults');
             jobStatusDiv.style.display = 'block';
@@ -1247,13 +1357,23 @@
                 const resp = await fetch('/bulk_upload_s3', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ bucket, prefix, metadata_options: selectedMetadata })
+                    body: JSON.stringify({ 
+                        bucket, 
+                        prefix, 
+                        metadata_options: selectedMetadata,
+                        aws_region: awsRegion,
+                        aws_access_key_id: awsAccessKeyId,
+                        aws_secret_access_key: awsSecretAccessKey
+                    })
                 });
                 const result = await resp.json();
                 if (resp.ok && result.success) {
                     updateJobStatusUI(result.job_id, result.results);
                     showJobResults(result.job_id, result.results);
-                    s3Status.innerHTML = '<div class="success">S3 processing completed! Check job results below.</div>';
+                    // Keep the processing message visible for a moment before clearing
+                    setTimeout(() => {
+                        s3Status.innerHTML = '';
+                    }, 1000);
                     loadDocuments();
                 } else {
                     s3Status.innerHTML = `<div class=\"error\">Error: ${result.error || 'Unknown error'}</div>`;
@@ -1443,7 +1563,7 @@
                 <div class="job-container">
                     <div class="job-header" onclick="toggleJob('${job.job_id}')">
                         <div class="job-title">
-                            <span class="job-id-badge">${job.job_id}</span>
+                            <a href="/job_metadata/${job.job_id}.json" class="job-id-badge" download>${job.job_id}</a>
                             <span class="job-status-badge ${statusClass}">${job.status || 'Unknown'}</span>
                             <span>${job.total_documents} documents</span>
                         </div>
@@ -1461,7 +1581,7 @@
                             <div class="metadata-grid">
                                 <div class="metadata-item">
                                     <span class="metadata-label">Job ID:</span>
-                                    <span class="metadata-value">${job.job_id}</span>
+                                    <span class="metadata-value"><a href="/job_metadata/${job.job_id}.json" download>${job.job_id}</a></span>
                                 </div>
                                 <div class="metadata-item">
                                     <span class="metadata-label">Status:</span>

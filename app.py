@@ -13,8 +13,10 @@ import glob
 try:
     import boto3
     from botocore.config import Config as BotoConfig
+    from botocore.exceptions import ClientError
 except Exception:
     boto3 = None
+    ClientError = None
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = Config.UPLOAD_FOLDER
@@ -332,6 +334,14 @@ def download_job_results(job_id):
     
     return send_from_directory('job_results', jsonl_filename, as_attachment=True)
 
+@app.route('/job_metadata/<filename>')
+def serve_job_metadata(filename):
+    """Serve job metadata JSON files"""
+    try:
+        return send_from_directory('job_metadata', filename)
+    except FileNotFoundError:
+        return jsonify({'error': 'Job metadata file not found'}), 404
+
 @app.route('/jobs')
 def list_jobs():
     """List all jobs"""
@@ -461,58 +471,89 @@ def _is_supported_key(key: str) -> bool:
     key_lower = key.lower()
     return key_lower.endswith('.pdf') or key_lower.endswith('.docx') or key_lower.endswith('.txt') or key_lower.endswith('.html')
 
-def _make_boto3_client():
+def _make_boto3_client(aws_access_key_id=None, aws_secret_access_key=None, aws_region=None):
     if boto3 is None:
         raise RuntimeError('boto3 is not installed. Please install boto3 to use S3 upload.')
     session_kwargs = {}
-    if Config.AWS_ACCESS_KEY_ID and Config.AWS_SECRET_ACCESS_KEY:
+    
+    # Use provided credentials or fall back to config
+    access_key = aws_access_key_id or Config.AWS_ACCESS_KEY_ID
+    secret_key = aws_secret_access_key or Config.AWS_SECRET_ACCESS_KEY
+    region = aws_region or Config.AWS_REGION
+    
+    if access_key and secret_key:
         session_kwargs.update({
-            'aws_access_key_id': Config.AWS_ACCESS_KEY_ID,
-            'aws_secret_access_key': Config.AWS_SECRET_ACCESS_KEY,
+            'aws_access_key_id': access_key,
+            'aws_secret_access_key': secret_key,
         })
         if Config.AWS_SESSION_TOKEN:
             session_kwargs['aws_session_token'] = Config.AWS_SESSION_TOKEN
-    if Config.AWS_REGION:
-        session_kwargs['region_name'] = Config.AWS_REGION
+    if region:
+        session_kwargs['region_name'] = region
     session = boto3.session.Session(**session_kwargs) if session_kwargs else boto3.session.Session()
     return session.client('s3', config=BotoConfig(signature_version='s3v4'))
 
 @app.route('/bulk_upload_s3', methods=['POST'])
 def bulk_upload_s3():
     """Process documents from S3 bucket/prefix, delete local temp files after parsing."""
-    data = request.get_json(silent=True) or {}
-    bucket = data.get('bucket') or Config.DEFAULT_S3_BUCKET
-    prefix = data.get('prefix') or Config.DEFAULT_S3_PREFIX
-    metadata_options = data.get('metadata_options') or ['title', 'author', 'topic']
+    try:
+        data = request.get_json(silent=True) or {}
+        bucket = data.get('bucket') or Config.DEFAULT_S3_BUCKET
+        prefix = data.get('prefix') or Config.DEFAULT_S3_PREFIX
+        metadata_options = data.get('metadata_options') or ['title', 'author', 'topic']
+        aws_region = data.get('aws_region')
+        aws_access_key_id = data.get('aws_access_key_id')
+        aws_secret_access_key = data.get('aws_secret_access_key')
 
-    if not bucket:
-        return jsonify({'error': 'S3 bucket is required'}), 400
+        if not bucket:
+            return jsonify({'error': 'S3 bucket is required'}), 400
+        if not aws_region:
+            return jsonify({'error': 'AWS Region is required'}), 400
+        if not aws_access_key_id:
+            return jsonify({'error': 'AWS Access Key ID is required'}), 400
+        if not aws_secret_access_key:
+            return jsonify({'error': 'AWS Secret Access Key is required'}), 400
 
-    s3 = _make_boto3_client()
+        s3 = _make_boto3_client(aws_access_key_id, aws_secret_access_key, aws_region)
+    except Exception as e:
+        return jsonify({'error': f'Failed to initialize S3 client: {str(e)}'}), 500
 
     # Collect keys recursively
-    keys = []
-    continuation_token = None
-    while True:
-        list_kwargs = {
-            'Bucket': bucket,
-            'Prefix': prefix or '',
-            'MaxKeys': 1000,
-        }
-        if continuation_token:
-            list_kwargs['ContinuationToken'] = continuation_token
-        resp = s3.list_objects_v2(**list_kwargs)
-        for obj in resp.get('Contents', []):
-            key = obj['Key']
-            if not key.endswith('/') and _is_supported_key(key):
-                keys.append(key)
-        if resp.get('IsTruncated'):
-            continuation_token = resp.get('NextContinuationToken')
-        else:
-            break
+    try:
+        keys = []
+        continuation_token = None
+        while True:
+            list_kwargs = {
+                'Bucket': bucket,
+                'Prefix': prefix or '',
+                'MaxKeys': 1000,
+            }
+            if continuation_token:
+                list_kwargs['ContinuationToken'] = continuation_token
+            resp = s3.list_objects_v2(**list_kwargs)
+            for obj in resp.get('Contents', []):
+                key = obj['Key']
+                if not key.endswith('/') and _is_supported_key(key):
+                    keys.append(key)
+            if resp.get('IsTruncated'):
+                continuation_token = resp.get('NextContinuationToken')
+            else:
+                break
 
-    if not keys:
-        return jsonify({'error': 'No supported documents found in S3 location'}), 400
+        if not keys:
+            return jsonify({'error': 'No supported documents found in S3 location'}), 400
+    except ClientError as e:
+        error_code = e.response['Error']['Code']
+        if error_code == 'InvalidAccessKeyId':
+            return jsonify({'error': 'Invalid AWS Access Key ID. Please check your credentials.'}), 401
+        elif error_code == 'SignatureDoesNotMatch':
+            return jsonify({'error': 'Invalid AWS Secret Access Key. Please check your credentials.'}), 401
+        elif error_code == 'NoSuchBucket':
+            return jsonify({'error': f'S3 bucket "{bucket}" does not exist or is not accessible.'}), 404
+        else:
+            return jsonify({'error': f'AWS S3 Error: {e.response["Error"]["Message"]}'}), 500
+    except Exception as e:
+        return jsonify({'error': f'Failed to list S3 objects: {str(e)}'}), 500
 
     # Create job
     job_id = job_manager.create_job(len(keys), metadata_options)

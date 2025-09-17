@@ -40,13 +40,13 @@ class Config:
     ]
 
     # AWS / S3 settings (override via environment variables)
-    AWS_REGION = os.getenv('AWS_REGION', 'us-east-1')
-    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID', 'AKIA5J2SGFI6RTJWSD7I')
-    AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY', '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')
+    AWS_REGION = os.getenv('AWS_REGION', None)
+    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID', None)
+    AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY', None)
     AWS_SESSION_TOKEN = os.getenv('AWS_SESSION_TOKEN', None)
 
     # Default S3 parameters (UI can override per request)
-    DEFAULT_S3_BUCKET = os.getenv('DOCUSEARCH_S3_BUCKET', 'documents-papers')
+    DEFAULT_S3_BUCKET = os.getenv('DOCUSEARCH_S3_BUCKET', '')
     DEFAULT_S3_PREFIX = os.getenv('DOCUSEARCH_S3_PREFIX', '')
     S3_MAX_KEYS = int(os.getenv('DOCUSEARCH_S3_MAX_KEYS', '10000'))
     
