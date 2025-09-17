@@ -38,6 +38,17 @@ class Config:
         'topic',
         'abstract'
     ]
+
+    # AWS / S3 settings (override via environment variables)
+    AWS_REGION = os.getenv('AWS_REGION', 'us-east-1')
+    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID', 'AKIA5J2SGFI6RTJWSD7I')
+    AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY', '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')
+    AWS_SESSION_TOKEN = os.getenv('AWS_SESSION_TOKEN', None)
+
+    # Default S3 parameters (UI can override per request)
+    DEFAULT_S3_BUCKET = os.getenv('DOCUSEARCH_S3_BUCKET', 'documents-papers')
+    DEFAULT_S3_PREFIX = os.getenv('DOCUSEARCH_S3_PREFIX', '')
+    S3_MAX_KEYS = int(os.getenv('DOCUSEARCH_S3_MAX_KEYS', '10000'))
     
     @classmethod
     def get_max_file_size_bytes(cls):

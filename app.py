@@ -6,6 +6,15 @@ from document_parser import DocumentParser
 from search_engine import SearchEngine
 from job_manager import job_manager
 from config import Config
+import tempfile
+import shutil
+import glob
+
+try:
+    import boto3
+    from botocore.config import Config as BotoConfig
+except Exception:
+    boto3 = None
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = Config.UPLOAD_FOLDER
@@ -337,6 +346,252 @@ def grobid_status():
         'available': is_available,
         'url': parser.grobid_url,
         'message': 'GROBID service is available' if is_available else 'GROBID service is not available'
+    })
+
+@app.route('/jobs/<job_id>', methods=['DELETE'])
+def delete_job(job_id):
+    """Delete a job and all related files (metadata, results, parsed documents)."""
+    # Check if job exists
+    job = job_manager.get_job_results(job_id)
+    if not job:
+        return jsonify({'error': 'Job not found'}), 404
+
+    deleted = {
+        'job_metadata': False,
+        'job_results': False,
+        'parsed_documents_deleted': 0
+    }
+
+    # Delete job metadata file
+    metadata_path = os.path.join('job_metadata', f"{job_id}.json")
+    if os.path.exists(metadata_path):
+        try:
+            os.remove(metadata_path)
+            deleted['job_metadata'] = True
+        except Exception:
+            pass
+
+    # Delete job results JSONL file
+    results_path = os.path.join('job_results', f"job_{job_id}_results.jsonl")
+    if os.path.exists(results_path):
+        try:
+            os.remove(results_path)
+            deleted['job_results'] = True
+        except Exception:
+            pass
+
+    # Delete parsed documents associated with this job
+    for json_path in glob.glob(os.path.join('parsed_documents', '*.json')):
+        try:
+            with open(json_path, 'r', encoding='utf-8') as f:
+                content = json.load(f)
+            if content.get('job_id') == job_id:
+                try:
+                    os.remove(json_path)
+                    deleted['parsed_documents_deleted'] += 1
+                except Exception:
+                    pass
+        except Exception:
+            # Skip unreadable files
+            continue
+
+    # Remove from in-memory manager
+    try:
+        if job_id in job_manager.jobs:
+            del job_manager.jobs[job_id]
+    except Exception:
+        pass
+
+    return jsonify({'success': True, 'deleted': deleted})
+
+@app.route('/jobs', methods=['DELETE'])
+def clear_all_jobs():
+    """Delete all job history and related local files (does not touch S3)."""
+    summary = {
+        'jobs_deleted': 0,
+        'parsed_documents_deleted': 0,
+        'job_metadata_deleted': 0,
+        'job_results_deleted': 0,
+        'uploads_deleted': 0
+    }
+
+    # Delete all job metadata files
+    for path in glob.glob(os.path.join('job_metadata', '*.json')):
+        try:
+            os.remove(path)
+            summary['job_metadata_deleted'] += 1
+        except Exception:
+            pass
+
+    # Delete all job results files
+    for path in glob.glob(os.path.join('job_results', 'job_*_results.jsonl')):
+        try:
+            os.remove(path)
+            summary['job_results_deleted'] += 1
+        except Exception:
+            pass
+
+    # Delete all parsed documents (they are derived artifacts)
+    for path in glob.glob(os.path.join('parsed_documents', '*.json')):
+        try:
+            os.remove(path)
+            summary['parsed_documents_deleted'] += 1
+        except Exception:
+            pass
+
+    # Delete all uploaded files (local cache)
+    for path in glob.glob(os.path.join(Config.UPLOAD_FOLDER, '*')):
+        try:
+            if os.path.isfile(path):
+                os.remove(path)
+                summary['uploads_deleted'] += 1
+        except Exception:
+            pass
+
+    # Clear in-memory jobs
+    try:
+        summary['jobs_deleted'] = len(job_manager.jobs)
+        job_manager.jobs.clear()
+    except Exception:
+        pass
+
+    return jsonify({'success': True, 'summary': summary})
+
+def _is_supported_key(key: str) -> bool:
+    key_lower = key.lower()
+    return key_lower.endswith('.pdf') or key_lower.endswith('.docx') or key_lower.endswith('.txt') or key_lower.endswith('.html')
+
+def _make_boto3_client():
+    if boto3 is None:
+        raise RuntimeError('boto3 is not installed. Please install boto3 to use S3 upload.')
+    session_kwargs = {}
+    if Config.AWS_ACCESS_KEY_ID and Config.AWS_SECRET_ACCESS_KEY:
+        session_kwargs.update({
+            'aws_access_key_id': Config.AWS_ACCESS_KEY_ID,
+            'aws_secret_access_key': Config.AWS_SECRET_ACCESS_KEY,
+        })
+        if Config.AWS_SESSION_TOKEN:
+            session_kwargs['aws_session_token'] = Config.AWS_SESSION_TOKEN
+    if Config.AWS_REGION:
+        session_kwargs['region_name'] = Config.AWS_REGION
+    session = boto3.session.Session(**session_kwargs) if session_kwargs else boto3.session.Session()
+    return session.client('s3', config=BotoConfig(signature_version='s3v4'))
+
+@app.route('/bulk_upload_s3', methods=['POST'])
+def bulk_upload_s3():
+    """Process documents from S3 bucket/prefix, delete local temp files after parsing."""
+    data = request.get_json(silent=True) or {}
+    bucket = data.get('bucket') or Config.DEFAULT_S3_BUCKET
+    prefix = data.get('prefix') or Config.DEFAULT_S3_PREFIX
+    metadata_options = data.get('metadata_options') or ['title', 'author', 'topic']
+
+    if not bucket:
+        return jsonify({'error': 'S3 bucket is required'}), 400
+
+    s3 = _make_boto3_client()
+
+    # Collect keys recursively
+    keys = []
+    continuation_token = None
+    while True:
+        list_kwargs = {
+            'Bucket': bucket,
+            'Prefix': prefix or '',
+            'MaxKeys': 1000,
+        }
+        if continuation_token:
+            list_kwargs['ContinuationToken'] = continuation_token
+        resp = s3.list_objects_v2(**list_kwargs)
+        for obj in resp.get('Contents', []):
+            key = obj['Key']
+            if not key.endswith('/') and _is_supported_key(key):
+                keys.append(key)
+        if resp.get('IsTruncated'):
+            continuation_token = resp.get('NextContinuationToken')
+        else:
+            break
+
+    if not keys:
+        return jsonify({'error': 'No supported documents found in S3 location'}), 400
+
+    # Create job
+    job_id = job_manager.create_job(len(keys), metadata_options)
+
+    results = {
+        'job_id': job_id,
+        'success_count': 0,
+        'error_count': 0,
+        'skipped_count': 0,
+        'successful_files': [],
+        'failed_files': [],
+        'skipped_files': [],
+        'errors': []
+    }
+
+    temp_dir = tempfile.mkdtemp(prefix='s3_docs_')
+    try:
+        for idx, key in enumerate(keys, start=1):
+            original_filename = os.path.basename(key)
+            job_manager.update_job_progress(job_id, original_filename, idx, results['success_count'], results['error_count'])
+            local_path = os.path.join(temp_dir, original_filename)
+            try:
+                # Download to temp
+                s3.download_file(bucket, key, local_path)
+
+                # Validate
+                is_valid, skip_reason, error_msg = parser.validate_file(local_path)
+                if not is_valid:
+                    results['skipped_count'] += 1
+                    results['skipped_files'].append({'filename': original_filename, 'reason': skip_reason, 'message': error_msg})
+                    job_manager.add_file_result(job_id, original_filename, False, error=error_msg, skip_reason=skip_reason)
+                    continue
+
+                # Parse
+                parsed_content = parser.parse_document(local_path, metadata_options, job_id)
+
+                # Save parsed JSON
+                timestamped_name = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{original_filename}"
+                parsed_filename = f"parsed_{timestamped_name}.json"
+                parsed_filepath = os.path.join('parsed_documents', parsed_filename)
+                with open(parsed_filepath, 'w', encoding='utf-8') as f:
+                    json.dump(parsed_content, f, indent=2, ensure_ascii=False)
+
+                # Index
+                search_engine.index_document(parsed_content, timestamped_name)
+
+                results['success_count'] += 1
+                results['successful_files'].append({
+                    'filename': original_filename,
+                    'title': parsed_content.get('title', 'Untitled'),
+                    'extracted_metadata': {key: parsed_content.get(key, 'Not found') for key in metadata_options}
+                })
+                job_manager.add_file_result(job_id, original_filename, True, metadata=parsed_content)
+            except Exception as e:
+                results['error_count'] += 1
+                results['failed_files'].append(original_filename)
+                results['errors'].append(f"{original_filename}: {str(e)}")
+                job_manager.add_file_result(job_id, original_filename, False, error=str(e))
+            finally:
+                # Per-file cleanup
+                if os.path.exists(local_path):
+                    try:
+                        os.remove(local_path)
+                    except Exception:
+                        pass
+    finally:
+        # Remove temp directory
+        try:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+        except Exception:
+            pass
+
+    job_manager.complete_job(job_id, success=True)
+
+    return jsonify({
+        'success': True,
+        'job_id': job_id,
+        'message': f'S3 processing completed. {results["success_count"]} successful, {results["error_count"]} failed, {results["skipped_count"]} skipped.',
+        'results': results
     })
 
 if __name__ == '__main__':

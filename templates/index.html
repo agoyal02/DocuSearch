@@ -929,6 +929,29 @@
                     </button>
                 </form>
                 <div id="uploadStatus"></div>
+
+                <!-- Source selector -->
+                <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid #eee;">
+                    <h3 style="margin-bottom:8px;">Source</h3>
+                    <label style="margin-right:16px;">
+                        <input type="radio" name="sourceType" value="local" checked> Local Directory
+                    </label>
+                    <label>
+                        <input type="radio" name="sourceType" value="s3"> S3 Bucket
+                    </label>
+
+                    <div id="s3Inputs" style="display:none; margin-top:12px;">
+                        <input type="text" id="s3Bucket" placeholder="S3 Bucket (required)" style="width: 48%; padding:8px; margin-right: 8px;">
+                        <div style="font-size: 0.85em; color: #6c757d; margin: 6px 0 10px 0;">
+                            Recommended test bucket: <code>documents-papers</code>
+                        </div>
+                        <input type="text" id="s3Prefix" placeholder="Prefix (optional)" style="width: 48%; padding:8px;">
+                        <div style="margin-top:10px; display:flex; gap:10px;">
+                            <button id="s3ProcessBtn" class="upload-btn">Process from S3</button>
+                        </div>
+                        <div id="s3Status" style="margin-top:8px;"></div>
+                    </div>
+                </div>
                 
                 <!-- Job Results Section -->
                 <div class="job-results" id="jobResults">
@@ -952,7 +975,9 @@
             
             <!-- Documents List -->
             <div class="documents-list">
-                <h2>Documents by Job</h2>
+                <h2 style="display:flex; align-items:center; gap:12px;">Job History
+                    <button id="clearHistoryBtn" class="job-action-btn" style="margin-left:auto;">🧹 Clear History</button>
+                </h2>
                 <div id="documentsList"></div>
             </div>
         </div>
@@ -960,6 +985,14 @@
 
     <script>
         // Directory input change handler
+        // Toggle S3 inputs visibility
+        document.querySelectorAll('input[name="sourceType"]').forEach(r => {
+            r.addEventListener('change', () => {
+                const isS3 = document.querySelector('input[name="sourceType"]:checked').value === 's3';
+                document.getElementById('s3Inputs').style.display = isS3 ? 'block' : 'none';
+            });
+        });
+
         document.getElementById('directoryInput').addEventListener('change', function(e) {
             const files = e.target.files;
             const selectedDirDiv = document.getElementById('selectedDirectory');
@@ -1047,6 +1080,14 @@
             const progressDiv = document.getElementById('uploadProgress');
             const progressFill = document.getElementById('progressFill');
             const progressText = document.getElementById('progressText');
+            const sourceType = document.querySelector('input[name="sourceType"]:checked').value;
+
+            // If S3 is selected, bypass local directory logic
+            if (sourceType === 's3') {
+                statusDiv.innerHTML = '';
+                document.getElementById('s3ProcessBtn').click();
+                return;
+            }
             
             if (!directoryInput.files[0]) {
                 statusDiv.innerHTML = '<div class="error">Please select a directory to upload.</div>';
@@ -1169,6 +1210,51 @@
             uploadBtn.disabled = false;
             uploadBtn.textContent = 'Upload & Parse Directory';
             progressDiv.style.display = 'none';
+        });
+
+        // S3 processing handler
+        document.getElementById('s3ProcessBtn').addEventListener('click', async function(e) {
+            e.preventDefault();
+            const s3Status = document.getElementById('s3Status');
+            const bucket = document.getElementById('s3Bucket').value.trim();
+            const prefix = document.getElementById('s3Prefix').value.trim();
+
+            // Get selected metadata options
+            const selectedMetadata = [];
+            document.querySelectorAll('input[name="metadata"]:checked').forEach(cb => selectedMetadata.push(cb.value));
+            if (selectedMetadata.length === 0) {
+                s3Status.innerHTML = '<div class="error">Please select at least one metadata field to extract.</div>';
+                return;
+            }
+            if (!bucket) {
+                s3Status.innerHTML = '<div class="error">Please enter an S3 bucket.</div>';
+                return;
+            }
+
+            s3Status.innerHTML = '<div class="loading">Starting S3 processing...</div>';
+            const jobStatusDiv = document.getElementById('jobStatus');
+            const jobResultsDiv = document.getElementById('jobResults');
+            jobStatusDiv.style.display = 'block';
+            jobResultsDiv.style.display = 'none';
+
+            try {
+                const resp = await fetch('/bulk_upload_s3', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bucket, prefix, metadata_options: selectedMetadata })
+                });
+                const result = await resp.json();
+                if (resp.ok && result.success) {
+                    updateJobStatusUI(result.job_id, result.results);
+                    showJobResults(result.job_id, result.results);
+                    s3Status.innerHTML = '<div class="success">S3 processing completed! Check job results below.</div>';
+                    loadDocuments();
+                } else {
+                    s3Status.innerHTML = `<div class=\"error\">Error: ${result.error || 'Unknown error'}</div>`;
+                }
+            } catch (err) {
+                s3Status.innerHTML = `<div class=\"error\">S3 processing failed: ${err.message}</div>`;
+            }
         });
         
         // Search functionality
@@ -1419,6 +1505,38 @@
                 toggle.classList.add('expanded');
             }
         }
+        
+        async function deleteJob(jobId) {
+            if (!confirm(`Delete job ${jobId}? This will remove job history and all related files.`)) return;
+            try {
+                const resp = await fetch(`/jobs/${jobId}`, { method: 'DELETE' });
+                const result = await resp.json();
+                if (resp.ok && result.success) {
+                    // Refresh list
+                    loadDocuments();
+                } else {
+                    alert(result.error || 'Failed to delete job');
+                }
+            } catch (e) {
+                alert('Error deleting job: ' + e.message);
+            }
+        }
+
+        // Clear all history
+        document.getElementById('clearHistoryBtn').addEventListener('click', async function() {
+            if (!confirm('Clear all job history? This deletes local job metadata, results, and parsed documents.')) return;
+            try {
+                const resp = await fetch('/jobs', { method: 'DELETE' });
+                const result = await resp.json();
+                if (resp.ok && result.success) {
+                    loadDocuments();
+                } else {
+                    alert(result.error || 'Failed to clear history');
+                }
+            } catch (e) {
+                alert('Error clearing history: ' + e.message);
+            }
+        });
         
         // Search on Enter key
         document.getElementById('searchInput').addEventListener('keypress', function(e) {
