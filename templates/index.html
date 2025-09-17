@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DocuSearch - Document Parser & Search</title>
+    <title>DocuParse - Document Parser, Extractor & Search</title>
     <style>
         * {
             margin: 0;
@@ -878,13 +878,155 @@
                 font-size: 2em;
             }
         }
+        
+        .metrics-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid #e9ecef;
+            overflow: hidden;
+        }
+        
+        .metrics-header {
+            background: #e9ecef;
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s ease;
+        }
+        
+        .metrics-header:hover {
+            background: #dee2e6;
+        }
+        
+        .metrics-header h2 {
+            margin: 0;
+            font-size: 1.2em;
+            color: #495057;
+        }
+        
+        .metrics-toggle {
+            font-size: 1.2em;
+            color: #6c757d;
+            transition: transform 0.3s ease;
+        }
+        
+        .metrics-toggle.expanded {
+            transform: rotate(180deg);
+        }
+        
+        .metrics-content {
+            padding: 20px;
+            background: white;
+        }
+        
+        .documents-list {
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid #e9ecef;
+            overflow: hidden;
+        }
+        
+        .documents-header {
+            background: #e9ecef;
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s ease;
+        }
+        
+        .documents-header:hover {
+            background: #dee2e6;
+        }
+        
+        .documents-header h2 {
+            margin: 0;
+            font-size: 1.2em;
+            color: #495057;
+        }
+        
+        .documents-toggle {
+            font-size: 1.2em;
+            color: #6c757d;
+            transition: transform 0.3s ease;
+        }
+        
+        .documents-toggle.expanded {
+            transform: rotate(180deg);
+        }
+        
+        .documents-content {
+            padding: 20px;
+            background: white;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .metric-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 4px solid #28a745;
+        }
+        
+        .metric-card.failed {
+            border-left-color: #dc3545;
+        }
+        
+        .metric-card.warning {
+            border-left-color: #ffc107;
+        }
+        
+        .metric-card.info {
+            border-left-color: #17a2b8;
+        }
+        
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .metric-label {
+            font-size: 0.9em;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .metrics-refresh {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        
+        .metrics-refresh:hover {
+            background: #0056b3;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>DocuSearch</h1>
-            <p>Upload, Parse, and Search Your Documents</p>
+            <h1>DocuParse</h1>
+            <p>Upload, Parse, Extract and Search Your Documents</p>
         </div>
         
         <div class="main-content">
@@ -1076,10 +1218,27 @@
             
             <!-- Documents List -->
             <div class="documents-list">
-                <h2 style="display:flex; align-items:center; gap:12px;">Job History
-                    <button id="clearHistoryBtn" class="job-action-btn" style="margin-left:auto;">🧹 Clear History</button>
-                </h2>
-                <div id="documentsList"></div>
+                <div class="documents-header" onclick="toggleJobHistory()">
+                    <h2 style="display:flex; align-items:center; gap:12px; margin:0;">
+                        📋 Job History
+                        <button id="clearHistoryBtn" class="job-action-btn" onclick="event.stopPropagation(); clearAllHistory();" style="margin-left:auto;">🧹 Clear History</button>
+                    </h2>
+                    <span class="documents-toggle" id="documentsToggle">▼</span>
+                </div>
+                <div class="documents-content" id="documentsContent" style="display: none;">
+                    <div id="documentsList"></div>
+                </div>
+            </div>
+            
+            <!-- Collapsible Metrics Section -->
+            <div class="metrics-section" id="metricsSection">
+                <div class="metrics-header" onclick="toggleMetrics()">
+                    <h2>📊 System Metrics</h2>
+                    <span class="metrics-toggle" id="metricsToggle">▼</span>
+                </div>
+                <div class="metrics-content" id="metricsContent" style="display: none;">
+                    <!-- Metrics will be populated by JavaScript -->
+                </div>
             </div>
         </div>
     </div>
@@ -1734,21 +1893,7 @@
             }
         }
 
-        // Clear all history
-        document.getElementById('clearHistoryBtn').addEventListener('click', async function() {
-            if (!confirm('Clear all job history? This deletes local job metadata, results, and parsed documents.')) return;
-            try {
-                const resp = await fetch('/jobs', { method: 'DELETE' });
-                const result = await resp.json();
-                if (resp.ok && result.success) {
-                    loadDocuments();
-                } else {
-                    alert(result.error || 'Failed to clear history');
-                }
-            } catch (e) {
-                alert('Error clearing history: ' + e.message);
-            }
-        });
+        // Clear all history - now handled by clearAllHistory() function
         
         // Search on Enter key
         document.getElementById('searchInput').addEventListener('keypress', function(e) {
@@ -1841,6 +1986,130 @@
         
         // Load documents on page load
         loadDocuments();
+        
+        // Load and display metrics
+        loadMetrics();
+        
+        // Metrics functions
+        async function loadMetrics() {
+            try {
+                const response = await fetch('/metrics');
+                if (response.ok) {
+                    const metrics = await response.json();
+                    displayMetrics(metrics);
+                } else {
+                    console.error('Failed to load metrics:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error loading metrics:', error);
+            }
+        }
+        
+        function displayMetrics(metrics) {
+            const metricsContent = document.getElementById('metricsContent');
+            if (!metricsContent) return;
+            
+            const jobs = metrics.jobs;
+            const documents = metrics.documents;
+            
+            metricsContent.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="margin: 0;">System Performance</h3>
+                    <button class="metrics-refresh" onclick="loadMetrics()">🔄 Refresh</button>
+                </div>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-value">${jobs.total}</div>
+                        <div class="metric-label">Total Jobs</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">${jobs.successful}</div>
+                        <div class="metric-label">Successful Jobs</div>
+                    </div>
+                    <div class="metric-card failed">
+                        <div class="metric-value">${jobs.failed}</div>
+                        <div class="metric-label">Failed Jobs</div>
+                    </div>
+                    <div class="metric-card info">
+                        <div class="metric-value">${jobs.currently_processing}</div>
+                        <div class="metric-label">Currently Processing</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">${documents.total_processed}</div>
+                        <div class="metric-label">Documents Processed</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">${documents.total_successful}</div>
+                        <div class="metric-label">Successful Documents</div>
+                    </div>
+                    <div class="metric-card failed">
+                        <div class="metric-value">${documents.total_failed}</div>
+                        <div class="metric-label">Failed Documents</div>
+                    </div>
+                    <div class="metric-card warning">
+                        <div class="metric-value">${documents.total_skipped}</div>
+                        <div class="metric-label">Skipped Documents</div>
+                    </div>
+                    <div class="metric-card info">
+                        <div class="metric-value">${jobs.p50_latency_seconds.toFixed(2)}s</div>
+                        <div class="metric-label">P50 Job Latency</div>
+                    </div>
+                    <div class="metric-card info">
+                        <div class="metric-value">${jobs.p95_latency_seconds.toFixed(2)}s</div>
+                        <div class="metric-label">P95 Job Latency</div>
+                    </div>
+                    <div class="metric-card info">
+                        <div class="metric-value">${documents.p50_processing_time_seconds.toFixed(2)}s</div>
+                        <div class="metric-label">P50 Doc Processing</div>
+                    </div>
+                    <div class="metric-card info">
+                        <div class="metric-value">${documents.p95_processing_time_seconds.toFixed(2)}s</div>
+                        <div class="metric-label">P95 Doc Processing</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function toggleMetrics() {
+            const metricsContent = document.getElementById('metricsContent');
+            const metricsToggle = document.getElementById('metricsToggle');
+            
+            if (metricsContent.style.display === 'none') {
+                metricsContent.style.display = 'block';
+                metricsToggle.classList.add('expanded');
+            } else {
+                metricsContent.style.display = 'none';
+                metricsToggle.classList.remove('expanded');
+            }
+        }
+        
+        function toggleJobHistory() {
+            const documentsContent = document.getElementById('documentsContent');
+            const documentsToggle = document.getElementById('documentsToggle');
+            
+            if (documentsContent.style.display === 'none') {
+                documentsContent.style.display = 'block';
+                documentsToggle.classList.add('expanded');
+            } else {
+                documentsContent.style.display = 'none';
+                documentsToggle.classList.remove('expanded');
+            }
+        }
+        
+        async function clearAllHistory() {
+            if (!confirm('Clear all job history? This deletes local job metadata, results, and parsed documents.')) return;
+            try {
+                const resp = await fetch('/jobs', { method: 'DELETE' });
+                const result = await resp.json();
+                if (resp.ok && result.success) {
+                    loadDocuments();
+                } else {
+                    alert(result.error || 'Failed to clear history');
+                }
+            } catch (e) {
+                alert('Error clearing history: ' + e.message);
+            }
+        }
     </script>
 </body>
 </html>

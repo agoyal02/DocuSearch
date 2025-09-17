@@ -6,9 +6,11 @@ from document_parser import DocumentParser
 from search_engine import SearchEngine
 from job_manager import job_manager
 from config import Config
+from metrics_collector import metrics_collector
 import tempfile
 import shutil
 import glob
+import time
 
 try:
     import boto3
@@ -222,6 +224,9 @@ def bulk_upload():
     # Create job
     job_id = job_manager.create_job(len(files), metadata_options, 'Local')
     
+    # Start metrics collection for this job
+    metrics_collector.start_job(job_id, len(files))
+    
     # Process files asynchronously (in a real app, this would be a background task)
     results = {
         'job_id': job_id,
@@ -244,6 +249,9 @@ def bulk_upload():
         # Update job progress
         job_manager.update_job_progress(job_id, original_filename, i + 1, results['success_count'], results['error_count'])
         
+        # Start timing document processing
+        doc_start_time = time.time()
+        
         try:
             # Save uploaded file
             filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{original_filename}"
@@ -261,6 +269,10 @@ def bulk_upload():
                     'message': error_msg
                 })
                 job_manager.add_file_result(job_id, original_filename, False, error=error_msg, skip_reason=skip_reason)
+                
+                # Record document processing metrics
+                doc_processing_time = time.time() - doc_start_time
+                metrics_collector.record_document_processing(doc_processing_time, False)
                 continue
             
             # Parse the document with selected metadata options
@@ -284,14 +296,28 @@ def bulk_upload():
             
             job_manager.add_file_result(job_id, original_filename, True, metadata=parsed_content)
             
+            # Record successful document processing metrics
+            doc_processing_time = time.time() - doc_start_time
+            metrics_collector.record_document_processing(doc_processing_time, True)
+            
         except Exception as e:
             results['error_count'] += 1
             results['failed_files'].append(original_filename)
             results['errors'].append(f"{original_filename}: {str(e)}")
             job_manager.add_file_result(job_id, original_filename, False, error=str(e))
+            
+            # Record failed document processing metrics
+            doc_processing_time = time.time() - doc_start_time
+            metrics_collector.record_document_processing(doc_processing_time, False)
+    
+    # Update metrics with final job progress
+    metrics_collector.update_job_progress(job_id, results['success_count'], results['error_count'], results['skipped_count'])
     
     # Complete job
     job_manager.complete_job(job_id, success=True)
+    
+    # Complete metrics collection for this job
+    metrics_collector.complete_job(job_id, success=True)
     
     return jsonify({
         'success': True,
@@ -360,6 +386,24 @@ def grobid_status():
         'message': 'GROBID service is available' if is_available else 'GROBID service is not available'
     })
 
+@app.route('/metrics')
+def get_metrics():
+    """Get metrics in JSON format"""
+    try:
+        metrics = metrics_collector.get_metrics_summary()
+        return jsonify(metrics)
+    except Exception as e:
+        return jsonify({'error': f'Failed to get metrics: {str(e)}'}), 500
+
+@app.route('/metrics/prometheus')
+def get_prometheus_metrics():
+    """Get metrics in Prometheus format"""
+    try:
+        metrics = metrics_collector.get_prometheus_metrics()
+        return metrics, 200, {'Content-Type': 'text/plain; charset=utf-8'}
+    except Exception as e:
+        return f'# Error getting metrics: {str(e)}', 500, {'Content-Type': 'text/plain; charset=utf-8'}
+
 @app.route('/jobs/<job_id>', methods=['DELETE'])
 def delete_job(job_id):
     """Delete a job and all related files (metadata, results, parsed documents)."""
@@ -371,7 +415,8 @@ def delete_job(job_id):
     deleted = {
         'job_metadata': False,
         'job_results': False,
-        'parsed_documents_deleted': 0
+        'parsed_documents_deleted': 0,
+        'metrics_reset': False
     }
 
     # Delete job metadata file
@@ -414,6 +459,15 @@ def delete_job(job_id):
     except Exception:
         pass
 
+    # Check if this was the last job and reset metrics if so
+    try:
+        if len(job_manager.jobs) == 0:
+            # No more jobs, reset metrics to clean state
+            metrics_collector.reset_metrics()
+            deleted['metrics_reset'] = True
+    except Exception:
+        pass
+
     return jsonify({'success': True, 'deleted': deleted})
 
 @app.route('/jobs', methods=['DELETE'])
@@ -424,7 +478,8 @@ def clear_all_jobs():
         'parsed_documents_deleted': 0,
         'job_metadata_deleted': 0,
         'job_results_deleted': 0,
-        'uploads_deleted': 0
+        'uploads_deleted': 0,
+        'metrics_reset': False
     }
 
     # Delete all job metadata files
@@ -466,6 +521,13 @@ def clear_all_jobs():
         job_manager.jobs.clear()
     except Exception:
         pass
+
+    # Reset metrics data
+    try:
+        metrics_collector.reset_metrics()
+        summary['metrics_reset'] = True
+    except Exception as e:
+        print(f"Error resetting metrics: {e}")
 
     return jsonify({'success': True, 'summary': summary})
 
@@ -572,6 +634,9 @@ def bulk_upload_s3():
 
     # Create job
     job_id = job_manager.create_job(len(keys), metadata_options, 'S3')
+    
+    # Start metrics collection for this job
+    metrics_collector.start_job(job_id, len(keys))
 
     results = {
         'job_id': job_id,
@@ -590,6 +655,10 @@ def bulk_upload_s3():
             original_filename = os.path.basename(key)
             job_manager.update_job_progress(job_id, original_filename, idx, results['success_count'], results['error_count'])
             local_path = os.path.join(temp_dir, original_filename)
+            
+            # Start timing document processing
+            doc_start_time = time.time()
+            
             try:
                 # Download to temp
                 s3.download_file(bucket, key, local_path)
@@ -600,6 +669,10 @@ def bulk_upload_s3():
                     results['skipped_count'] += 1
                     results['skipped_files'].append({'filename': original_filename, 'reason': skip_reason, 'message': error_msg})
                     job_manager.add_file_result(job_id, original_filename, False, error=error_msg, skip_reason=skip_reason)
+                    
+                    # Record document processing metrics
+                    doc_processing_time = time.time() - doc_start_time
+                    metrics_collector.record_document_processing(doc_processing_time, False)
                     continue
 
                 # Parse
@@ -622,11 +695,21 @@ def bulk_upload_s3():
                     'extracted_metadata': {key: parsed_content.get(key, 'Not found') for key in metadata_options}
                 })
                 job_manager.add_file_result(job_id, original_filename, True, metadata=parsed_content)
+                
+                # Record successful document processing metrics
+                doc_processing_time = time.time() - doc_start_time
+                metrics_collector.record_document_processing(doc_processing_time, True)
+                
             except Exception as e:
                 results['error_count'] += 1
                 results['failed_files'].append(original_filename)
                 results['errors'].append(f"{original_filename}: {str(e)}")
                 job_manager.add_file_result(job_id, original_filename, False, error=str(e))
+                
+                # Record failed document processing metrics
+                doc_processing_time = time.time() - doc_start_time
+                metrics_collector.record_document_processing(doc_processing_time, False)
+                
             finally:
                 # Per-file cleanup
                 if os.path.exists(local_path):
@@ -641,7 +724,13 @@ def bulk_upload_s3():
         except Exception:
             pass
 
+    # Update metrics with final job progress
+    metrics_collector.update_job_progress(job_id, results['success_count'], results['error_count'], results['skipped_count'])
+    
     job_manager.complete_job(job_id, success=True)
+    
+    # Complete metrics collection for this job
+    metrics_collector.complete_job(job_id, success=True)
 
     return jsonify({
         'success': True,
