@@ -162,7 +162,8 @@ def list_documents():
                 'total_files': job_summary.get('total_files', 0),
                 'processed_files': job_summary.get('processed_files', 0),
                 'start_time': job_summary.get('start_time'),
-                'end_time': job_summary.get('end_time')
+                'end_time': job_summary.get('end_time'),
+                'data_source': job_summary.get('data_source', 'Local')
             })
         else:
             # Create new job entry for jobs without successful documents
@@ -181,7 +182,8 @@ def list_documents():
                 'total_files': job_summary.get('total_files', 0),
                 'processed_files': job_summary.get('processed_files', 0),
                 'start_time': job_summary.get('start_time'),
-                'end_time': job_summary.get('end_time')
+                'end_time': job_summary.get('end_time'),
+                'data_source': job_summary.get('data_source', 'Local')
             }
     
     return jsonify({
@@ -218,7 +220,7 @@ def bulk_upload():
         metadata_options = ['title', 'author', 'topic']  # Default options
     
     # Create job
-    job_id = job_manager.create_job(len(files), metadata_options)
+    job_id = job_manager.create_job(len(files), metadata_options, 'Local')
     
     # Process files asynchronously (in a real app, this would be a background task)
     results = {
@@ -481,17 +483,25 @@ def _make_boto3_client(aws_access_key_id=None, aws_secret_access_key=None, aws_r
     secret_key = aws_secret_access_key or Config.AWS_SECRET_ACCESS_KEY
     region = aws_region or Config.AWS_REGION
     
-    if access_key and secret_key:
+    # Only add credentials if they are provided and not empty
+    if access_key and secret_key and access_key.strip() and secret_key.strip():
         session_kwargs.update({
             'aws_access_key_id': access_key,
             'aws_secret_access_key': secret_key,
         })
         if Config.AWS_SESSION_TOKEN:
             session_kwargs['aws_session_token'] = Config.AWS_SESSION_TOKEN
+    
     if region:
         session_kwargs['region_name'] = region
-    session = boto3.session.Session(**session_kwargs) if session_kwargs else boto3.session.Session()
-    return session.client('s3', config=BotoConfig(signature_version='s3v4'))
+    
+    # For public buckets, create client without credentials
+    if session_kwargs:
+        session = boto3.session.Session(**session_kwargs)
+        return session.client('s3', config=BotoConfig(signature_version='s3v4'))
+    else:
+        # For public buckets, use default client without credentials
+        return boto3.client('s3', region_name=region)
 
 @app.route('/bulk_upload_s3', methods=['POST'])
 def bulk_upload_s3():
@@ -504,16 +514,21 @@ def bulk_upload_s3():
         aws_region = data.get('aws_region')
         aws_access_key_id = data.get('aws_access_key_id')
         aws_secret_access_key = data.get('aws_secret_access_key')
+        is_public_bucket = data.get('is_public_bucket', False)
 
         if not bucket:
             return jsonify({'error': 'S3 bucket is required'}), 400
         if not aws_region:
             return jsonify({'error': 'AWS Region is required'}), 400
-        if not aws_access_key_id:
-            return jsonify({'error': 'AWS Access Key ID is required'}), 400
-        if not aws_secret_access_key:
-            return jsonify({'error': 'AWS Secret Access Key is required'}), 400
+        
+        # For private buckets, credentials are required
+        if not is_public_bucket:
+            if not aws_access_key_id:
+                return jsonify({'error': 'AWS Access Key ID is required for private buckets'}), 400
+            if not aws_secret_access_key:
+                return jsonify({'error': 'AWS Secret Access Key is required for private buckets'}), 400
 
+        # Create S3 client - for public buckets, credentials are optional
         s3 = _make_boto3_client(aws_access_key_id, aws_secret_access_key, aws_region)
     except Exception as e:
         return jsonify({'error': f'Failed to initialize S3 client: {str(e)}'}), 500
@@ -556,7 +571,7 @@ def bulk_upload_s3():
         return jsonify({'error': f'Failed to list S3 objects: {str(e)}'}), 500
 
     # Create job
-    job_id = job_manager.create_job(len(keys), metadata_options)
+    job_id = job_manager.create_job(len(keys), metadata_options, 'S3')
 
     results = {
         'job_id': job_id,

@@ -22,7 +22,7 @@ class JobManager:
         # Load existing jobs from metadata files
         self._load_existing_jobs()
     
-    def create_job(self, total_files: int, metadata_options: List[str]) -> str:
+    def create_job(self, total_files: int, metadata_options: List[str], data_source: str = 'Local') -> str:
         """Create a new job and return job ID"""
         job_id = str(uuid.uuid4())[:8]  # Short job ID
         
@@ -45,6 +45,7 @@ class JobManager:
             'current_file': None,
             'progress_percentage': 0,
             'metadata_options': metadata_options,
+            'data_source': data_source,
             'results': []
         }
         
@@ -196,7 +197,8 @@ class JobManager:
             'corrupt_files': job.get('corrupt_files', 0),
             'processing_time': self._calculate_processing_time(job),
             'start_time': job.get('start_time'),
-            'end_time': job.get('end_time')
+            'end_time': job.get('end_time'),
+            'data_source': job.get('data_source', 'Local')
         }
     
     def list_jobs(self) -> List[Dict]:

@@ -652,6 +652,27 @@
             text-decoration: none;
         }
         
+        .data-source-badge {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .data-source-badge.local {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #4caf50;
+        }
+        
+        .data-source-badge.s3 {
+            background: #fff3e0;
+            color: #f57c00;
+            border: 1px solid #ff9800;
+        }
+        
         .job-status-badge {
             padding: 4px 8px;
             border-radius: 4px;
@@ -880,41 +901,67 @@
                     </label>
 
                     <div id="s3Inputs" style="display:none; margin-top:12px;">
-                        <div style="margin-bottom: 12px;">
-                            <label style="display:block; margin-bottom:4px; font-weight:500;">AWS Region:</label>
-                            <input type="text" id="awsRegion" placeholder="AWS Region" style="width: 100%; padding:8px; margin-bottom:4px;">
-                            <div style="font-size: 0.85em; color: #6c757d;">
-                                Recommended Test AWS Region: <code>us-east-1</code>
+                        <!-- S3 Bucket Type Selection -->
+                        <div style="margin-bottom: 16px;">
+                            <label style="display:block; margin-bottom:8px; font-weight:500;">S3 Bucket Type:</label>
+                            <div class="radio-group" style="display: flex; gap: 20px;">
+                                <input type="radio" id="s3Public" name="s3BucketType" value="public" checked>
+                                <label for="s3Public">Public Bucket</label>
+                                <input type="radio" id="s3Private" name="s3BucketType" value="private">
+                                <label for="s3Private">Private Bucket</label>
                             </div>
                         </div>
                         
-                        <div style="margin-bottom: 12px;">
-                            <label style="display:block; margin-bottom:4px; font-weight:500;">AWS Access Key ID:</label>
-                            <input type="text" id="awsAccessKeyId" placeholder="AWS Access Key ID" style="width: 100%; padding:8px; margin-bottom:4px;">
-                            <div style="font-size: 0.85em; color: #6c757d;">
-                                Recommended Test Access Key ID: <code>AKIA5J2SGFI6RTJWSD7I</code>
+                        <!-- Public Bucket Fields -->
+                        <div id="publicBucketFields">
+                            <div style="margin-bottom: 12px;">
+                                <label style="display:block; margin-bottom:4px; font-weight:500;">AWS Region:</label>
+                                <input type="text" id="awsRegion" placeholder="AWS Region" style="width: 100%; padding:8px; margin-bottom:4px;">
+                                <div style="font-size: 0.85em; color: #6c757d;">
+                                    Recommended: <code>us-east-1</code>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 12px;">
+                                <label style="display:block; margin-bottom:4px; font-weight:500;">S3 Bucket Name:</label>
+                                <input type="text" id="s3Bucket" placeholder="S3 Bucket (required)" style="width: 100%; padding:8px; margin-bottom:4px;">
+                                <div style="font-size: 0.85em; color: #6c757d;">
+                                    Example: <code>documents-papers</code>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 12px;">
+                                <label style="display:block; margin-bottom:4px; font-weight:500;">S3 Prefix (optional):</label>
+                                <input type="text" id="s3Prefix" placeholder="Prefix (optional)" style="width: 100%; padding:8px;">
                             </div>
                         </div>
                         
-                        <div style="margin-bottom: 12px;">
-                            <label style="display:block; margin-bottom:4px; font-weight:500;">AWS Secret Access Key:</label>
-                            <input type="password" id="awsSecretAccessKey" placeholder="AWS Secret Access Key" style="width: 100%; padding:8px; margin-bottom:4px;">
-                            <div style="font-size: 0.85em; color: #6c757d;">
-                                Recommended Test Secret Key: <code>5A0r8JKJTtC8enKz8e3MJ3vt7TYqPKwauQkxwxWG</code>
+                        <!-- Private Bucket Fields -->
+                        <div id="privateBucketFields" style="display:none;">
+                            <div style="margin-bottom: 12px;">
+                                <label style="display:block; margin-bottom:4px; font-weight:500;">AWS Region:</label>
+                                <input type="text" id="awsRegionPrivate" placeholder="AWS Region" style="width: 100%; padding:8px;">
                             </div>
-                        </div>
-                        
-                        <div style="margin-bottom: 12px;">
-                            <label style="display:block; margin-bottom:4px; font-weight:500;">S3 Bucket Name:</label>
-                            <input type="text" id="s3Bucket" placeholder="S3 Bucket (required)" style="width: 100%; padding:8px; margin-bottom:4px;">
-                            <div style="font-size: 0.85em; color: #6c757d;">
-                                Recommended test bucket: <code>documents-papers</code>
+                            
+                            <div style="margin-bottom: 12px;">
+                                <label style="display:block; margin-bottom:4px; font-weight:500;">AWS Access Key ID:</label>
+                                <input type="text" id="awsAccessKeyId" placeholder="AWS Access Key ID" style="width: 100%; padding:8px;">
                             </div>
-                        </div>
-                        
-                        <div style="margin-bottom: 12px;">
-                            <label style="display:block; margin-bottom:4px; font-weight:500;">S3 Prefix (optional):</label>
-                            <input type="text" id="s3Prefix" placeholder="Prefix (optional)" style="width: 100%; padding:8px;">
+                            
+                            <div style="margin-bottom: 12px;">
+                                <label style="display:block; margin-bottom:4px; font-weight:500;">AWS Secret Access Key:</label>
+                                <input type="password" id="awsSecretAccessKey" placeholder="AWS Secret Access Key" style="width: 100%; padding:8px;">
+                            </div>
+                            
+                            <div style="margin-bottom: 12px;">
+                                <label style="display:block; margin-bottom:4px; font-weight:500;">S3 Bucket Name:</label>
+                                <input type="text" id="s3BucketPrivate" placeholder="S3 Bucket (required)" style="width: 100%; padding:8px;">
+                            </div>
+                            
+                            <div style="margin-bottom: 12px;">
+                                <label style="display:block; margin-bottom:4px; font-weight:500;">S3 Prefix (optional):</label>
+                                <input type="text" id="s3PrefixPrivate" placeholder="Prefix (optional)" style="width: 100%; padding:8px;">
+                            </div>
                         </div>
                         
                         <div id="s3Status" style="margin-top:8px;"></div>
@@ -1313,15 +1360,37 @@
             progressDiv.style.display = 'none';
         });
 
+        // S3 Bucket Type Toggle Handler
+        document.querySelectorAll('input[name="s3BucketType"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const isPublic = this.value === 'public';
+                document.getElementById('publicBucketFields').style.display = isPublic ? 'block' : 'none';
+                document.getElementById('privateBucketFields').style.display = isPublic ? 'none' : 'block';
+            });
+        });
+
         // S3 processing handler
         document.getElementById('s3ProcessBtn').addEventListener('click', async function(e) {
             e.preventDefault();
             const s3Status = document.getElementById('s3Status');
-            const awsRegion = document.getElementById('awsRegion').value.trim();
-            const awsAccessKeyId = document.getElementById('awsAccessKeyId').value.trim();
-            const awsSecretAccessKey = document.getElementById('awsSecretAccessKey').value.trim();
-            const bucket = document.getElementById('s3Bucket').value.trim();
-            const prefix = document.getElementById('s3Prefix').value.trim();
+            const isPublicBucket = document.querySelector('input[name="s3BucketType"]:checked').value === 'public';
+            
+            // Get values based on bucket type
+            let awsRegion, awsAccessKeyId, awsSecretAccessKey, bucket, prefix;
+            
+            if (isPublicBucket) {
+                awsRegion = document.getElementById('awsRegion').value.trim();
+                awsAccessKeyId = null; // Not needed for public buckets
+                awsSecretAccessKey = null; // Not needed for public buckets
+                bucket = document.getElementById('s3Bucket').value.trim();
+                prefix = document.getElementById('s3Prefix').value.trim();
+            } else {
+                awsRegion = document.getElementById('awsRegionPrivate').value.trim();
+                awsAccessKeyId = document.getElementById('awsAccessKeyId').value.trim();
+                awsSecretAccessKey = document.getElementById('awsSecretAccessKey').value.trim();
+                bucket = document.getElementById('s3BucketPrivate').value.trim();
+                prefix = document.getElementById('s3PrefixPrivate').value.trim();
+            }
 
             // Get selected metadata options
             const selectedMetadata = [];
@@ -1334,13 +1403,15 @@
                 s3Status.innerHTML = '<div class="error">Please enter AWS Region.</div>';
                 return;
             }
-            if (!awsAccessKeyId) {
-                s3Status.innerHTML = '<div class="error">Please enter AWS Access Key ID.</div>';
-                return;
-            }
-            if (!awsSecretAccessKey) {
-                s3Status.innerHTML = '<div class="error">Please enter AWS Secret Access Key.</div>';
-                return;
+            if (!isPublicBucket) {
+                if (!awsAccessKeyId) {
+                    s3Status.innerHTML = '<div class="error">Please enter AWS Access Key ID.</div>';
+                    return;
+                }
+                if (!awsSecretAccessKey) {
+                    s3Status.innerHTML = '<div class="error">Please enter AWS Secret Access Key.</div>';
+                    return;
+                }
             }
             if (!bucket) {
                 s3Status.innerHTML = '<div class="error">Please enter an S3 bucket.</div>';
@@ -1353,19 +1424,27 @@
             jobStatusDiv.style.display = 'block';
             jobResultsDiv.style.display = 'none';
 
-            try {
-                const resp = await fetch('/bulk_upload_s3', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
+                try {
+                    // Build payload based on bucket type
+                    const payload = { 
                         bucket, 
                         prefix, 
                         metadata_options: selectedMetadata,
                         aws_region: awsRegion,
-                        aws_access_key_id: awsAccessKeyId,
-                        aws_secret_access_key: awsSecretAccessKey
-                    })
-                });
+                        is_public_bucket: isPublicBucket
+                    };
+                    
+                    // Only include credentials for private buckets
+                    if (!isPublicBucket) {
+                        payload.aws_access_key_id = awsAccessKeyId;
+                        payload.aws_secret_access_key = awsSecretAccessKey;
+                    }
+                    
+                    const resp = await fetch('/bulk_upload_s3', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
                 const result = await resp.json();
                 if (resp.ok && result.success) {
                     updateJobStatusUI(result.job_id, result.results);
@@ -1565,6 +1644,7 @@
                         <div class="job-title">
                             <a href="/job_metadata/${job.job_id}.json" class="job-id-badge" download>${job.job_id}</a>
                             <span class="job-status-badge ${statusClass}">${job.status || 'Unknown'}</span>
+                            <span class="data-source-badge ${job.data_source === 'S3' ? 's3' : 'local'}">${job.data_source || 'Local'}</span>
                             <span>${job.total_documents} documents</span>
                         </div>
                         <div class="job-stats-summary">
@@ -1602,6 +1682,12 @@
                                 <div class="metadata-item">
                                     <span class="metadata-label">Upload Date:</span>
                                     <span class="metadata-value">${new Date(job.upload_date).toLocaleString()}</span>
+                                </div>
+                                <div class="metadata-item">
+                                    <span class="metadata-label">Data Source:</span>
+                                    <span class="metadata-value">
+                                        <span class="data-source-badge ${job.data_source === 'S3' ? 's3' : 'local'}">${job.data_source || 'Local'}</span>
+                                    </span>
                                 </div>
                                 ${metadataHtml}
                             </div>
