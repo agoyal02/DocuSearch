@@ -1,0 +1,19 @@
+{
+  "title": "",
+  "author": [
+    {
+      "first_name": "Wilbur",
+      "last_name": "Ross",
+      "full_name": "Wilbur Ross"
+    }
+  ],
+  "abstract": "This publication has been developed by NIST in accordance with its statutory responsibilities under the Federal Information Security Modernization Act (FISMA) of 2014, 44 U.S.C. § 3551 et seq., Public Law (P.L.) 113-283. NIST is responsible for developing information security standards and guidelines, including minimum requirements for federal information systems, but such standards and guidelines shall not apply to national security systems without the express approval of appropriate federal officials exercising policy authority over such systems. This guideline is consistent with the requirements of the Office of Management and Budget (OMB) Circular A-130.Nothing in this publication should be taken to contradict the standards and guidelines made mandatory and binding on federal agencies by the Secretary of Commerce under statutory authority. Nor should these guidelines be interpreted as altering or superseding the existing authorities of the Secretary of Commerce, Director of the OMB, or any other federal official. This publication may be used by nongovernmental organizations on a voluntary basis and is not subject to copyright in the United States. Attribution would, however, be appreciated by NIST.",
+  "published_date": "August 2020",
+  "topic": "architecture, cybersecurity, enterprise, network security, zero trust",
+  "text": "AudienceThis document is intended to describe zero trust for enterprise security architects. It is meant to aid understanding of zero trust for civilian unclassified systems and provide a road map to migrate and deploy zero trust security concepts to an enterprise environment. Agency cybersecurity managers, network administrators, and managers may also gain insight into zero trust and ZTA from this document. It is not intended to be a single deployment plan for ZTA as an enterprise will have uni...",
+  "file_type": "PDF",
+  "upload_date": "2025-09-16T21:03:10.914102",
+  "job_id": "3e6fd992",
+  "parser": "GROBID",
+  "file_size": 966908
+}

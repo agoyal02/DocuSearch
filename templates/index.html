@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocuSearch - Document Parser & Search</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            padding: 40px;
+        }
+        
+        .upload-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px dashed #dee2e6;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-section:hover {
+            border-color: #4facfe;
+            background: #f0f8ff;
+        }
+        
+        .upload-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        
+        .directory-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+        
+        .directory-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .directory-input-label {
+            display: block;
+            padding: 20px;
+            background: white;
+            border: 2px solid #4facfe;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1em;
+            color: #4facfe;
+        }
+        
+        .directory-input-label:hover {
+            background: #4facfe;
+            color: white;
+        }
+        
+        .selected-directory {
+            background: #e8f5e8;
+            border: 2px solid #4caf50;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .selected-directory h4 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .directory-path {
+            background: white;
+            border: 1px solid #4caf50;
+            border-radius: 4px;
+            padding: 12px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 0.9em;
+            color: #333;
+            word-break: break-all;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        
+        .file-count {
+            color: #2e7d32;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+        
+        .upload-btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
+        }
+        
+        .upload-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .search-section {
+            margin-bottom: 30px;
+        }
+        
+        .search-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+        
+        .search-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .results-section {
+            margin-top: 30px;
+        }
+        
+        .results-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        
+        .result-item {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .result-item:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        
+        .result-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .result-meta {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+        
+        .result-snippet {
+            color: #555;
+            line-height: 1.6;
+        }
+        
+        .result-score {
+            background: #4facfe;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            float: right;
+        }
+        
+        .result-metadata {
+            margin: 8px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .metadata-tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            border: 1px solid #bbdefb;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .documents-list {
+            margin-top: 30px;
+        }
+        
+        .document-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .document-info h3 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .document-meta {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .view-btn {
+            background: #4facfe;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+        
+        .view-btn:hover {
+            background: #3d8bfe;
+        }
+        
+        .metadata-options {
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .metadata-options h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .metadata-checkboxes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+        
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 0.95em;
+            color: #555;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+        
+        .checkbox-label:hover {
+            background: #f8f9fa;
+            color: #333;
+        }
+        
+        .checkbox-label input[type="checkbox"] {
+            display: none;
+        }
+        
+        .checkmark {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #4facfe;
+            border-radius: 4px;
+            margin-right: 10px;
+            position: relative;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        
+        .checkbox-label input[type="checkbox"]:checked + .checkmark {
+            background: #4facfe;
+            border-color: #4facfe;
+        }
+        
+        .checkbox-label input[type="checkbox"]:checked + .checkmark::after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 2px;
+            width: 4px;
+            height: 8px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+        
+        .checkbox-label input[type="checkbox"]:checked + .checkmark + span {
+            color: #4facfe;
+            font-weight: 500;
+        }
+        
+        
+        .mode-option:hover {
+            color: #333;
+        }
+        
+        
+        .upload-progress {
+            margin: 15px 0;
+            display: none;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            text-align: center;
+            margin-top: 5px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .job-status {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .job-header h4 {
+            margin: 0;
+            color: #333;
+            font-size: 1.2em;
+        }
+        
+        .job-id {
+            background: #4facfe;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-family: monospace;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        
+        .status-badge.processing {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .status-badge.completed {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-badge.failed {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status-text {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .progress-container {
+            margin-bottom: 15px;
+        }
+        
+        .current-file {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            border: 1px solid #bbdefb;
+        }
+        
+        .job-results {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            display: none;
+        }
+        
+        .job-results h4 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .job-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4facfe;
+            display: block;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        
+        .job-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .download-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 0.9em;
+            cursor: pointer;
+        }
+        
+        .download-btn:hover {
+            background: #218838;
+        }
+        
+        .download-btn.secondary {
+            background: #17a2b8;
+        }
+        
+        .download-btn.secondary:hover {
+            background: #138496;
+        }
+        
+        .view-job-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 0.9em;
+            cursor: pointer;
+        }
+        
+        .view-job-btn:hover {
+            background: #5a6268;
+        }
+        
+        .job-container {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .job-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s ease;
+        }
+        
+        .job-header:hover {
+            background: #e9ecef;
+        }
+        
+        .job-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .job-id-badge {
+            background: #4facfe;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-family: monospace;
+            font-weight: bold;
+        }
+        
+        .job-status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: 500;
+        }
+        
+        .job-status-badge.completed {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .job-status-badge.processing {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .job-status-badge.failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .job-stats-summary {
+            display: flex;
+            gap: 20px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .job-toggle {
+            font-size: 1.2em;
+            transition: transform 0.3s ease;
+        }
+        
+        .job-toggle.expanded {
+            transform: rotate(90deg);
+        }
+        
+        .job-content {
+            display: none;
+            padding: 0;
+        }
+        
+        .job-content.expanded {
+            display: block;
+        }
+        
+        .job-metadata {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .job-metadata h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 1.1em;
+        }
+        
+        .metadata-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        
+        .metadata-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .metadata-label {
+            font-weight: 500;
+            color: #555;
+        }
+        
+        .metadata-value {
+            color: #333;
+        }
+        
+        .job-documents {
+            padding: 20px;
+        }
+        
+        .job-documents h4 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 1.1em;
+        }
+        
+        .document-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        
+        .document-item:hover {
+            background: #e9ecef;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .document-info h5 {
+            margin: 0 0 5px 0;
+            color: #333;
+            font-size: 1em;
+        }
+        
+        .document-meta {
+            color: #666;
+            font-size: 0.85em;
+            margin-bottom: 5px;
+        }
+        
+        .document-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .view-doc-btn {
+            background: #4facfe;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 0.8em;
+            cursor: pointer;
+        }
+        
+        .view-doc-btn:hover {
+            background: #3d8bfe;
+        }
+        
+        .job-actions-bar {
+            background: #e9ecef;
+            padding: 10px 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .job-action-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 0.8em;
+            cursor: pointer;
+        }
+        
+        .job-action-btn:hover {
+            background: #5a6268;
+        }
+        
+        .job-action-btn.primary {
+            background: #28a745;
+        }
+        
+        .job-action-btn.primary:hover {
+            background: #218838;
+        }
+        
+        .job-action-btn.secondary {
+            background: #17a2b8;
+        }
+        
+        .job-action-btn.secondary:hover {
+            background: #138496;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>DocuSearch</h1>
+            <p>Upload, Parse, and Search Your Documents</p>
+        </div>
+        
+        <div class="main-content">
+            <!-- Upload Section -->
+            <div class="upload-section">
+                <h2>Upload Documents from Directory</h2>
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <div class="directory-input-wrapper">
+                        <input type="file" id="directoryInput" class="directory-input" webkitdirectory directory multiple>
+                        <label for="directoryInput" class="directory-input-label">
+                            📁 Choose a directory to upload<br>
+                            <small>Select a folder to upload all supported documents (PDF, DOCX, TXT, HTML)</small>
+                        </label>
+                    </div>
+                    
+                    <!-- Selected Directory Path -->
+                    <div class="selected-directory" id="selectedDirectory" style="display: none;">
+                        <h4>Selected Directory:</h4>
+                        <div class="directory-path" id="directoryPath">
+                            <!-- Directory path will be displayed here -->
+                        </div>
+                        <div class="file-count" id="fileCount">
+                            <!-- File count will be displayed here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Metadata Extraction Options -->
+                    <div class="metadata-options">
+                        <h3>Select Metadata to Extract:</h3>
+                        <div class="metadata-checkboxes">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="extractAuthor" name="metadata" value="author" checked>
+                                <span class="checkmark"></span>
+                                Author Names
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="extractPublishedDate" name="metadata" value="published_date" checked>
+                                <span class="checkmark"></span>
+                                Published Date
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="extractAbstract" name="metadata" value="abstract" checked>
+                                <span class="checkmark"></span>
+                                Abstract
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="extractTitle" name="metadata" value="title" checked>
+                                <span class="checkmark"></span>
+                                Title
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="extractTopic" name="metadata" value="topic" checked>
+                                <span class="checkmark"></span>
+                                Topic or Subject
+                            </label>
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="upload-progress" id="uploadProgress">
+                        <div class="job-status" id="jobStatus" style="display: none;">
+                            <div class="job-header">
+                                <h4>Job Status</h4>
+                                <span class="job-id" id="jobId"></span>
+                            </div>
+                            <div class="status-indicator">
+                                <span class="status-badge" id="statusBadge">Processing</span>
+                                <span class="status-text" id="statusText">Processing documents...</span>
+                            </div>
+                            <div class="progress-container">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="progressFill"></div>
+                                </div>
+                                <div class="progress-text" id="progressText">Ready to upload...</div>
+                            </div>
+                            <div class="current-file" id="currentFile"></div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="upload-btn" id="uploadBtn">
+                        Upload & Parse Directory
+                    </button>
+                </form>
+                <div id="uploadStatus"></div>
+                
+                <!-- Job Results Section -->
+                <div class="job-results" id="jobResults">
+                    <h4>Job Results</h4>
+                    <div class="job-stats" id="jobStats">
+                        <!-- Stats will be populated by JavaScript -->
+                    </div>
+                    <div class="job-actions" id="jobActions">
+                        <!-- Actions will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Search Section -->
+            <div class="search-section">
+                <h2>Search Documents</h2>
+                <input type="text" id="searchInput" class="search-input" placeholder="Enter your search query...">
+                <button class="search-btn" onclick="searchDocuments()">Search</button>
+                <div id="searchResults"></div>
+            </div>
+            
+            <!-- Documents List -->
+            <div class="documents-list">
+                <h2>Documents by Job</h2>
+                <div id="documentsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Directory input change handler
+        document.getElementById('directoryInput').addEventListener('change', function(e) {
+            const files = e.target.files;
+            const selectedDirDiv = document.getElementById('selectedDirectory');
+            const directoryPathDiv = document.getElementById('directoryPath');
+            const fileCountDiv = document.getElementById('fileCount');
+            
+            if (files.length > 0) {
+                // Get the directory path from the first file
+                const firstFile = files[0];
+                const fullPath = firstFile.webkitRelativePath || firstFile.name;
+                const directoryPath = fullPath.substring(0, fullPath.lastIndexOf('/'));
+                
+                // Filter out directories and get only actual files
+                const actualFiles = Array.from(files).filter(file => {
+                    // More robust filtering:
+                    // 1. Must have a file extension (contains a dot)
+                    // 2. Must not end with '/' (directory indicator)
+                    // 3. Must not be a hidden file starting with '.'
+                    // 4. Must have a reasonable file size (not 0 for directories)
+                    const hasExtension = file.name.includes('.') && !file.name.endsWith('/');
+                    const notHidden = !file.name.startsWith('.');
+                    const hasSize = file.size > 0;
+                    
+                    return hasExtension && notHidden && hasSize;
+                });
+                
+                // Filter supported files from actual files
+                const supportedFiles = actualFiles.filter(file => {
+                    const extension = file.name.toLowerCase().split('.').pop();
+                    return ['pdf', 'docx', 'txt', 'html'].includes(extension);
+                });
+                
+                // Get file types breakdown
+                const fileTypes = {};
+                supportedFiles.forEach(file => {
+                    const ext = file.name.toLowerCase().split('.').pop();
+                    fileTypes[ext] = (fileTypes[ext] || 0) + 1;
+                });
+                
+                // Create detailed path information
+                let pathInfo = '';
+                if (directoryPath) {
+                    pathInfo = `📁 Selected Directory: ${directoryPath}`;
+                } else {
+                    pathInfo = '📁 Selected Directory: Root Directory';
+                }
+                
+                // Add file type breakdown
+                const typeBreakdown = Object.entries(fileTypes)
+                    .map(([ext, count]) => `${ext.toUpperCase()}: ${count}`)
+                    .join(', ');
+                
+                // Create file list preview (show first 5 files)
+                const fileList = supportedFiles.slice(0, 5).map(file => file.name).join(', ');
+                const moreFiles = supportedFiles.length > 5 ? ` and ${supportedFiles.length - 5} more files` : '';
+                
+                // Display directory information with enhanced details
+                directoryPathDiv.innerHTML = `
+                    <div style="font-weight: bold; margin-bottom: 8px;">${pathInfo}</div>
+                    <div style="font-size: 0.9em; color: #666; margin-bottom: 6px;">
+                        📊 File Types: ${typeBreakdown || 'None'}
+                    </div>
+                    <div style="font-size: 0.9em; color: #666; margin-bottom: 6px;">
+                        📂 Total Files: ${actualFiles.length} | ✅ Supported: ${supportedFiles.length} | ❌ Unsupported: ${actualFiles.length - supportedFiles.length}
+                    </div>
+                    <div style="font-size: 0.85em; color: #555; background: #f8f9fa; padding: 6px; border-radius: 3px; margin-top: 6px;">
+                        📄 Files: ${fileList}${moreFiles}
+                    </div>
+                `;
+                
+                fileCountDiv.textContent = `Ready to process ${supportedFiles.length} supported documents`;
+                selectedDirDiv.style.display = 'block';
+            } else {
+                selectedDirDiv.style.display = 'none';
+            }
+        });
+        
+        // Upload functionality
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const directoryInput = document.getElementById('directoryInput');
+            const uploadBtn = document.getElementById('uploadBtn');
+            const statusDiv = document.getElementById('uploadStatus');
+            const progressDiv = document.getElementById('uploadProgress');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            
+            if (!directoryInput.files[0]) {
+                statusDiv.innerHTML = '<div class="error">Please select a directory to upload.</div>';
+                return;
+            }
+            
+            // Get selected metadata options
+            const selectedMetadata = [];
+            const checkboxes = document.querySelectorAll('input[name="metadata"]:checked');
+            checkboxes.forEach(checkbox => {
+                selectedMetadata.push(checkbox.value);
+            });
+            
+            if (selectedMetadata.length === 0) {
+                statusDiv.innerHTML = '<div class="error">Please select at least one metadata field to extract.</div>';
+                return;
+            }
+            
+            // Filter out directories and get only actual files
+            const allFiles = Array.from(directoryInput.files);
+            const actualFiles = allFiles.filter(file => {
+                // More robust filtering:
+                // 1. Must have a file extension (contains a dot)
+                // 2. Must not end with '/' (directory indicator)
+                // 3. Must not be a hidden file starting with '.'
+                // 4. Must have a reasonable file size (not 0 for directories)
+                const hasExtension = file.name.includes('.') && !file.name.endsWith('/');
+                const notHidden = !file.name.startsWith('.');
+                const hasSize = file.size > 0;
+                
+                return hasExtension && notHidden && hasSize;
+            });
+            
+            // Filter only supported files from actual files
+            const files = actualFiles.filter(file => {
+                const extension = file.name.toLowerCase().split('.').pop();
+                return ['pdf', 'docx', 'txt', 'html'].includes(extension);
+            });
+            
+            if (files.length === 0) {
+                statusDiv.innerHTML = '<div class="error">No supported files found in the selected directory. Please select a directory containing PDF, DOCX, TXT, or HTML files.</div>';
+                return;
+            }
+            
+            uploadBtn.disabled = true;
+            progressDiv.style.display = 'block';
+            statusDiv.innerHTML = '';
+            
+            if (files.length === 1) {
+                // Single file upload
+                uploadBtn.textContent = 'Uploading...';
+                statusDiv.innerHTML = '<div class="loading">Uploading and parsing document...</div>';
+                
+                const formData = new FormData();
+                formData.append('file', files[0]);
+                formData.append('metadata_options', JSON.stringify(selectedMetadata));
+                
+                try {
+                    const response = await fetch('/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        statusDiv.innerHTML = '<div class="success">Document uploaded and parsed successfully!</div>';
+                        directoryInput.value = '';
+                        loadDocuments();
+                    } else {
+                        statusDiv.innerHTML = `<div class="error">Error: ${result.error}</div>`;
+                    }
+                } catch (error) {
+                    statusDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+                }
+            } else {
+                // Bulk upload using dedicated endpoint
+                uploadBtn.textContent = `Uploading ${files.length} documents...`;
+                statusDiv.innerHTML = '<div class="loading">Starting bulk upload...</div>';
+                
+                // Show job status UI
+                const jobStatusDiv = document.getElementById('jobStatus');
+                const jobResultsDiv = document.getElementById('jobResults');
+                jobStatusDiv.style.display = 'block';
+                jobResultsDiv.style.display = 'none';
+                
+                const formData = new FormData();
+                files.forEach(file => {
+                    formData.append('files', file);
+                });
+                formData.append('metadata_options', JSON.stringify(selectedMetadata));
+                
+                try {
+                    const response = await fetch('/bulk_upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        // Update job status UI
+                        updateJobStatusUI(result.job_id, result.results);
+                        
+                        // Show job results
+                        showJobResults(result.job_id, result.results);
+                        
+                        statusDiv.innerHTML = '<div class="success">Bulk upload completed! Check job results below.</div>';
+                    } else {
+                        statusDiv.innerHTML = `<div class="error">Bulk upload failed: ${result.error}</div>`;
+                    }
+                } catch (error) {
+                    statusDiv.innerHTML = `<div class="error">Bulk upload error: ${error.message}</div>`;
+                }
+                
+                directoryInput.value = '';
+                loadDocuments();
+            }
+            
+            uploadBtn.disabled = false;
+            uploadBtn.textContent = 'Upload & Parse Directory';
+            progressDiv.style.display = 'none';
+        });
+        
+        // Search functionality
+        async function searchDocuments() {
+            const query = document.getElementById('searchInput').value.trim();
+            const resultsDiv = document.getElementById('searchResults');
+            
+            if (!query) {
+                resultsDiv.innerHTML = '<div class="error">Please enter a search query.</div>';
+                return;
+            }
+            
+            resultsDiv.innerHTML = '<div class="loading">Searching...</div>';
+            
+            try {
+                const response = await fetch(`/search?q=${encodeURIComponent(query)}`);
+                const result = await response.json();
+                
+                if (result.results && result.results.length > 0) {
+                    let html = `<h3>Search Results (${result.total} found)</h3>`;
+                    result.results.forEach(doc => {
+                        let metadataHtml = '';
+                        if (doc.author && Array.isArray(doc.author) && doc.author.length > 0) {
+                            const authors = doc.author.map(author => {
+                                if (typeof author === 'object' && author.name) {
+                                    return author.name;
+                                } else if (typeof author === 'string' && author !== 'Not found') {
+                                    return author;
+                                }
+                                return null;
+                            }).filter(author => author !== null);
+                            
+                            if (authors.length > 0) {
+                                metadataHtml += `<span class="metadata-tag">Author: ${authors.join(', ')}</span>`;
+                            }
+                        } else if (doc.author && !Array.isArray(doc.author) && doc.author !== 'Not found') {
+                            metadataHtml += `<span class="metadata-tag">Author: ${doc.author}</span>`;
+                        }
+                        if (doc.topic && doc.topic !== 'Not found') {
+                            metadataHtml += `<span class="metadata-tag">Topic: ${doc.topic}</span>`;
+                        }
+                        if (doc.published_date && doc.published_date !== 'Not found') {
+                            metadataHtml += `<span class="metadata-tag">Date: ${doc.published_date}</span>`;
+                        }
+                        
+                        html += `
+                            <div class="result-item">
+                                <div class="result-score">Score: ${doc.score.toFixed(2)}</div>
+                                <div class="result-title">${doc.title}</div>
+                                <div class="result-meta">File: ${doc.filename} | Type: ${doc.file_type} | Uploaded: ${new Date(doc.upload_date).toLocaleDateString()}</div>
+                                ${metadataHtml ? `<div class="result-metadata">${metadataHtml}</div>` : ''}
+                                <div class="result-snippet">${doc.snippet}</div>
+                            </div>
+                        `;
+                    });
+                    resultsDiv.innerHTML = html;
+                } else {
+                    resultsDiv.innerHTML = '<div class="error">No documents found matching your search.</div>';
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+        
+        // Load documents list grouped by job
+        async function loadDocuments() {
+            const listDiv = document.getElementById('documentsList');
+            
+            try {
+                const response = await fetch('/documents');
+                const result = await response.json();
+                
+                if (result.jobs && result.jobs.length > 0) {
+                    let html = '';
+                    
+                    // Sort jobs by upload date (newest first)
+                    result.jobs.sort((a, b) => new Date(b.upload_date) - new Date(a.upload_date));
+                    
+                    result.jobs.forEach(job => {
+                        html += createJobHTML(job);
+                    });
+                    
+                    listDiv.innerHTML = html;
+                } else {
+                    listDiv.innerHTML = '<p>No documents uploaded yet.</p>';
+                }
+            } catch (error) {
+                listDiv.innerHTML = `<div class="error">Error loading documents: ${error.message}</div>`;
+            }
+        }
+        
+        function createJobHTML(job) {
+            const statusClass = job.status ? job.status.toLowerCase() : 'unknown';
+            const processingTime = job.processing_time ? `${job.processing_time.toFixed(2)}s` : 'N/A';
+            
+            let metadataHtml = '';
+            if (job.skipped_documents > 0 || job.failed_documents > 0) {
+                metadataHtml += `
+                    <div class="metadata-item">
+                        <span class="metadata-label">Skipped Documents:</span>
+                        <span class="metadata-value">${job.skipped_documents}</span>
+                    </div>
+                `;
+                if (job.skipped_reasons && Object.keys(job.skipped_reasons).length > 0) {
+                    Object.entries(job.skipped_reasons).forEach(([reason, count]) => {
+                        if (count > 0) {
+                            const reasonLabel = reason.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                            metadataHtml += `
+                                <div class="metadata-item">
+                                    <span class="metadata-label">${reasonLabel}:</span>
+                                    <span class="metadata-value">${count}</span>
+                                </div>
+                            `;
+                        }
+                    });
+                }
+            }
+            
+            if (job.failed_documents > 0) {
+                metadataHtml += `
+                    <div class="metadata-item">
+                        <span class="metadata-label">Failed Documents:</span>
+                        <span class="metadata-value">${job.failed_documents}</span>
+                    </div>
+                `;
+            }
+            
+            if (job.corrupt_files > 0) {
+                metadataHtml += `
+                    <div class="metadata-item">
+                        <span class="metadata-label">Corrupt Files:</span>
+                        <span class="metadata-value">${job.corrupt_files}</span>
+                    </div>
+                `;
+            }
+            
+            let documentsHtml = '';
+            if (job.documents && job.documents.length > 0) {
+                job.documents.forEach(doc => {
+                    let docMetadataHtml = '';
+                    if (doc.author && Array.isArray(doc.author) && doc.author.length > 0) {
+                        const authors = doc.author.map(author => {
+                            if (typeof author === 'object' && author.name) {
+                                return author.name;
+                            } else if (typeof author === 'string' && author !== 'Not found') {
+                                return author;
+                            }
+                            return null;
+                        }).filter(author => author !== null);
+                        
+                        if (authors.length > 0) {
+                            docMetadataHtml += `<span class="metadata-tag">Author: ${authors.join(', ')}</span>`;
+                        }
+                    } else if (doc.author && !Array.isArray(doc.author) && doc.author !== 'Not found') {
+                        docMetadataHtml += `<span class="metadata-tag">Author: ${doc.author}</span>`;
+                    }
+                    if (doc.topic && doc.topic !== 'Not found') {
+                        docMetadataHtml += `<span class="metadata-tag">Topic: ${doc.topic}</span>`;
+                    }
+                    if (doc.published_date && doc.published_date !== 'Not found') {
+                        docMetadataHtml += `<span class="metadata-tag">Date: ${doc.published_date}</span>`;
+                    }
+                    
+                    documentsHtml += `
+                        <div class="document-item">
+                            <div class="document-info">
+                                <h5>${doc.title}</h5>
+                                <div class="document-meta">${doc.filename} | ${doc.file_type} | ${new Date(doc.upload_date).toLocaleDateString()}</div>
+                                ${docMetadataHtml ? `<div class="result-metadata">${docMetadataHtml}</div>` : ''}
+                            </div>
+                            <div class="document-actions">
+                                <a href="/document/${doc.filename}" class="view-doc-btn" target="_blank">View</a>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            return `
+                <div class="job-container">
+                    <div class="job-header" onclick="toggleJob('${job.job_id}')">
+                        <div class="job-title">
+                            <span class="job-id-badge">${job.job_id}</span>
+                            <span class="job-status-badge ${statusClass}">${job.status || 'Unknown'}</span>
+                            <span>${job.total_documents} documents</span>
+                        </div>
+                        <div class="job-stats-summary">
+                            <span>✅ ${job.successful_documents}</span>
+                            ${job.skipped_documents > 0 ? `<span>⏭️ ${job.skipped_documents}</span>` : ''}
+                            ${job.failed_documents > 0 ? `<span>❌ ${job.failed_documents}</span>` : ''}
+                            <span>⏱️ ${processingTime}</span>
+                        </div>
+                        <span class="job-toggle" id="toggle-${job.job_id}">▶</span>
+                    </div>
+                    <div class="job-content" id="content-${job.job_id}">
+                        <div class="job-metadata">
+                            <h4>Job Details</h4>
+                            <div class="metadata-grid">
+                                <div class="metadata-item">
+                                    <span class="metadata-label">Job ID:</span>
+                                    <span class="metadata-value">${job.job_id}</span>
+                                </div>
+                                <div class="metadata-item">
+                                    <span class="metadata-label">Status:</span>
+                                    <span class="metadata-value">${job.status || 'Unknown'}</span>
+                                </div>
+                                <div class="metadata-item">
+                                    <span class="metadata-label">Total Documents:</span>
+                                    <span class="metadata-value">${job.total_documents}</span>
+                                </div>
+                                <div class="metadata-item">
+                                    <span class="metadata-label">Successful:</span>
+                                    <span class="metadata-value">${job.successful_documents}</span>
+                                </div>
+                                <div class="metadata-item">
+                                    <span class="metadata-label">Processing Time:</span>
+                                    <span class="metadata-value">${processingTime}</span>
+                                </div>
+                                <div class="metadata-item">
+                                    <span class="metadata-label">Upload Date:</span>
+                                    <span class="metadata-value">${new Date(job.upload_date).toLocaleString()}</span>
+                                </div>
+                                ${metadataHtml}
+                            </div>
+                        </div>
+                        <div class="job-documents">
+                            <h4>Documents (${job.documents ? job.documents.length : 0})</h4>
+                            ${documentsHtml || '<p>No documents in this job.</p>'}
+                        </div>
+                        <div class="job-actions-bar">
+                            <a href="/job_results/${job.job_id}" class="job-action-btn primary" download>📥 Download Job Result</a>
+                            <a href="/job_results/${job.job_id}/download" class="job-action-btn secondary" download>📄 Download Document Metadata (JSONL)</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function toggleJob(jobId) {
+            const content = document.getElementById(`content-${jobId}`);
+            const toggle = document.getElementById(`toggle-${jobId}`);
+            
+            if (content.classList.contains('expanded')) {
+                content.classList.remove('expanded');
+                toggle.classList.remove('expanded');
+            } else {
+                content.classList.add('expanded');
+                toggle.classList.add('expanded');
+            }
+        }
+        
+        // Search on Enter key
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchDocuments();
+            }
+        });
+        
+        // Job status management functions
+        function updateJobStatusUI(jobId, results) {
+            const jobIdElement = document.getElementById('jobId');
+            const statusBadge = document.getElementById('statusBadge');
+            const statusText = document.getElementById('statusText');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            const currentFile = document.getElementById('currentFile');
+            
+            jobIdElement.textContent = `Job ID: ${jobId}`;
+            statusBadge.textContent = 'Completed';
+            statusBadge.className = 'status-badge completed';
+            statusText.textContent = 'All documents processed successfully';
+            progressFill.style.width = '100%';
+            progressText.textContent = `${results.success_count + results.error_count + results.skipped_count} of ${results.success_count + results.error_count + results.skipped_count} documents processed`;
+            currentFile.textContent = 'All files processed';
+        }
+        
+        function showJobResults(jobId, results) {
+            const jobResultsDiv = document.getElementById('jobResults');
+            const jobStatsDiv = document.getElementById('jobStats');
+            const jobActionsDiv = document.getElementById('jobActions');
+            
+            // Calculate processing time (approximate)
+            const processingTime = Math.round((results.success_count + results.error_count + results.skipped_count) * 0.5); // Rough estimate
+            
+            // Build stats HTML
+            let statsHtml = `
+                <div class="stat-item">
+                    <span class="stat-number">${results.success_count + results.error_count + results.skipped_count}</span>
+                    <div class="stat-label">Total Documents</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">${results.success_count}</span>
+                    <div class="stat-label">Successfully Processed</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">${results.skipped_count}</span>
+                    <div class="stat-label">Skipped</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">${results.error_count}</span>
+                    <div class="stat-label">Failed</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">${processingTime}s</span>
+                    <div class="stat-label">Processing Time</div>
+                </div>
+            `;
+            
+            // Add skip reasons if any
+            if (results.skipped_count > 0) {
+                const skipReasons = results.skipped_files.reduce((acc, file) => {
+                    acc[file.reason] = (acc[file.reason] || 0) + 1;
+                    return acc;
+                }, {});
+                
+                Object.entries(skipReasons).forEach(([reason, count]) => {
+                    const reasonLabel = reason.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    statsHtml += `
+                        <div class="stat-item">
+                            <span class="stat-number">${count}</span>
+                            <div class="stat-label">${reasonLabel}</div>
+                        </div>
+                    `;
+                });
+            }
+            
+            jobStatsDiv.innerHTML = statsHtml;
+            
+            // Build actions HTML
+            let actionsHtml = `
+                <a href="/job_results/${jobId}" class="download-btn" download>📥 Download Job Result</a>
+                <a href="/job_results/${jobId}/download" class="download-btn secondary" download>📄 Download Document Metadata (JSONL)</a>
+            `;
+            
+            jobActionsDiv.innerHTML = actionsHtml;
+            
+            // Show results
+            jobResultsDiv.style.display = 'block';
+        }
+        
+        // Load documents on page load
+        loadDocuments();
+    </script>
+</body>
+</html>

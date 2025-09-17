@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Directory Display Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .directory-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+        .directory-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        .directory-input-label {
+            display: block;
+            padding: 20px;
+            background: white;
+            border: 2px solid #4facfe;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1em;
+            color: #4facfe;
+        }
+        .directory-input-label:hover {
+            background: #4facfe;
+            color: white;
+        }
+        .selected-directory {
+            background: #e8f5e8;
+            border: 2px solid #4caf50;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .selected-directory h4 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        .directory-path {
+            background: white;
+            border: 1px solid #4caf50;
+            border-radius: 4px;
+            padding: 12px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 0.9em;
+            color: #333;
+            word-break: break-all;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        .file-count {
+            color: #2e7d32;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Enhanced Directory Upload Display Test</h1>
+        <p>This demonstrates the enhanced directory path display with detailed file information.</p>
+        
+        <div class="directory-input-wrapper">
+            <input type="file" id="directoryInput" class="directory-input" webkitdirectory directory multiple>
+            <label for="directoryInput" class="directory-input-label">
+                📁 Choose a directory to upload<br>
+                <small>Select a folder to upload all supported documents (PDF, DOCX, TXT, HTML)</small>
+            </label>
+        </div>
+        
+        <div class="selected-directory" id="selectedDirectory" style="display: none;">
+            <h4>Selected Directory:</h4>
+            <div class="directory-path" id="directoryPath">
+                <!-- Directory path will be displayed here -->
+            </div>
+            <div class="file-count" id="fileCount">
+                <!-- File count will be displayed here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Directory input change handler
+        document.getElementById('directoryInput').addEventListener('change', function(e) {
+            const files = e.target.files;
+            const selectedDirDiv = document.getElementById('selectedDirectory');
+            const directoryPathDiv = document.getElementById('directoryPath');
+            const fileCountDiv = document.getElementById('fileCount');
+            
+            if (files.length > 0) {
+                // Get the directory path from the first file
+                const firstFile = files[0];
+                const fullPath = firstFile.webkitRelativePath || firstFile.name;
+                const directoryPath = fullPath.substring(0, fullPath.lastIndexOf('/'));
+                
+                // Filter out directories and get only actual files
+                const actualFiles = Array.from(files).filter(file => {
+                    // Filter out directories (they don't have file extensions)
+                    return file.name.includes('.') && !file.name.endsWith('/');
+                });
+                
+                // Filter supported files from actual files
+                const supportedFiles = actualFiles.filter(file => {
+                    const extension = file.name.toLowerCase().split('.').pop();
+                    return ['pdf', 'docx', 'txt', 'html'].includes(extension);
+                });
+                
+                // Get file types breakdown
+                const fileTypes = {};
+                supportedFiles.forEach(file => {
+                    const ext = file.name.toLowerCase().split('.').pop();
+                    fileTypes[ext] = (fileTypes[ext] || 0) + 1;
+                });
+                
+                // Create detailed path information
+                let pathInfo = '';
+                if (directoryPath) {
+                    pathInfo = `📁 Selected Directory: ${directoryPath}`;
+                } else {
+                    pathInfo = '📁 Selected Directory: Root Directory';
+                }
+                
+                // Add file type breakdown
+                const typeBreakdown = Object.entries(fileTypes)
+                    .map(([ext, count]) => `${ext.toUpperCase()}: ${count}`)
+                    .join(', ');
+                
+                // Create file list preview (show first 5 files)
+                const fileList = supportedFiles.slice(0, 5).map(file => file.name).join(', ');
+                const moreFiles = supportedFiles.length > 5 ? ` and ${supportedFiles.length - 5} more files` : '';
+                
+                // Display directory information with enhanced details
+                directoryPathDiv.innerHTML = `
+                    <div style="font-weight: bold; margin-bottom: 8px;">${pathInfo}</div>
+                    <div style="font-size: 0.9em; color: #666; margin-bottom: 6px;">
+                        📊 File Types: ${typeBreakdown || 'None'}
+                    </div>
+                    <div style="font-size: 0.9em; color: #666; margin-bottom: 6px;">
+                        📂 Total Files: ${actualFiles.length} | ✅ Supported: ${supportedFiles.length} | ❌ Unsupported: ${actualFiles.length - supportedFiles.length}
+                    </div>
+                    <div style="font-size: 0.85em; color: #555; background: #f8f9fa; padding: 6px; border-radius: 3px; margin-top: 6px;">
+                        📄 Files: ${fileList}${moreFiles}
+                    </div>
+                `;
+                
+                fileCountDiv.textContent = `Ready to process ${supportedFiles.length} supported documents`;
+                selectedDirDiv.style.display = 'block';
+            } else {
+                selectedDirDiv.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

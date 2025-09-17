@@ -1,0 +1,18 @@
+{
+  "title": "",
+  "author": [
+    {
+      "first_name": "Wilbur",
+      "last_name": "Ross",
+      "full_name": "Wilbur Ross"
+    }
+  ],
+  "published_date": "August 2020",
+  "topic": "architecture, cybersecurity, enterprise, network security, zero trust",
+  "text": "AudienceThis document is intended to describe zero trust for enterprise security architects. It is meant to aid understanding of zero trust for civilian unclassified systems and provide a road map to migrate and deploy zero trust security concepts to an enterprise environment. Agency cybersecurity managers, network administrators, and managers may also gain insight into zero trust and ZTA from this document. It is not intended to be a single deployment plan for ZTA as an enterprise will have uni...",
+  "file_type": "PDF",
+  "upload_date": "2025-09-16T21:01:43.216623",
+  "job_id": "3dff0e24",
+  "parser": "GROBID",
+  "file_size": 966908
+}
