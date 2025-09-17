@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Document Metrics Schema",
+  "description": "Aggregate metrics for document processing in DocuSearch application",
+  "properties": {
+    "total_processed": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of documents processed"
+    },
+    "total_successful": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of successfully processed documents"
+    },
+    "total_failed": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of failed document processing attempts"
+    },
+    "total_skipped": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of skipped documents"
+    },
+    "total_processing_time": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Total processing time in seconds"
+    }
+  },
+  "required": [
+    "total_processed", "total_successful", "total_failed", 
+    "total_skipped", "total_processing_time"
+  ],
+  "additionalProperties": false
+}

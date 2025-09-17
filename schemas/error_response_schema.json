@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Error Response Schema",
+  "description": "Error response from DocuSearch API",
+  "properties": {
+    "error": {
+      "type": "string",
+      "description": "Error message"
+    },
+    "details": {
+      "type": "object",
+      "description": "Additional error details",
+      "additionalProperties": true
+    }
+  },
+  "required": ["error"],
+  "additionalProperties": false
+}

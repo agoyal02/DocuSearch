@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Bulk Upload Response Schema",
+  "description": "Response from bulk file upload in DocuSearch application",
+  "properties": {
+    "success": {
+      "type": "boolean",
+      "description": "Whether bulk upload was successful"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{8}$",
+      "description": "Job ID for tracking bulk upload progress"
+    },
+    "message": {
+      "type": "string",
+      "description": "Response message"
+    },
+    "results": {
+      "type": "object",
+      "properties": {
+        "success_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of successfully processed files"
+        },
+        "error_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of failed file processing attempts"
+        },
+        "skipped_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of skipped files"
+        },
+        "total_files": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total number of files in the batch"
+        },
+        "processing_time": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Total processing time in seconds"
+        }
+      },
+      "required": ["success_count", "error_count", "skipped_count", "total_files", "processing_time"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["success", "job_id", "message", "results"],
+  "additionalProperties": false
+}

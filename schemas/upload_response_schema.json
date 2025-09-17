@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Upload Response Schema",
+  "description": "Response from single file upload in DocuSearch application",
+  "properties": {
+    "success": {
+      "type": "boolean",
+      "description": "Whether upload was successful"
+    },
+    "filename": {
+      "type": "string",
+      "description": "Name of the uploaded file"
+    },
+    "parsed_content": {
+      "$ref": "document_metadata_schema.json",
+      "description": "Complete parsed document metadata"
+    },
+    "extracted_metadata": {
+      "type": "object",
+      "description": "Extracted metadata based on requested options",
+      "additionalProperties": true
+    },
+    "message": {
+      "type": "string",
+      "description": "Response message"
+    }
+  },
+  "required": ["success", "filename", "parsed_content", "extracted_metadata", "message"],
+  "additionalProperties": false
+}

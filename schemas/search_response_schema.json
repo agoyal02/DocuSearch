@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Search Response Schema",
+  "description": "Response from document search in DocuSearch application",
+  "properties": {
+    "query": {
+      "type": "string",
+      "description": "Search query used"
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "filename": {
+            "type": "string",
+            "description": "Name of the matching document file"
+          },
+          "title": {
+            "type": "string",
+            "description": "Document title"
+          },
+          "author": {
+            "type": "string",
+            "description": "Document author"
+          },
+          "topic": {
+            "type": "string",
+            "description": "Document topic"
+          },
+          "upload_date": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Document upload date"
+          },
+          "relevance_score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Search relevance score"
+          }
+        },
+        "required": ["filename", "title", "author", "topic", "upload_date", "relevance_score"],
+        "additionalProperties": false
+      },
+      "description": "Array of matching documents"
+    },
+    "total": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of matching documents"
+    }
+  },
+  "required": ["query", "results", "total"],
+  "additionalProperties": false
+}

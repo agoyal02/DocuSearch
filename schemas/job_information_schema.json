@@ -1,0 +1,154 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Job Information Schema",
+  "description": "Complete job tracking information for DocuSearch application",
+  "properties": {
+    "job_id": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{8}$",
+      "description": "8-character hexadecimal job identifier"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["Processing", "Completed", "Failed"],
+      "description": "Current job status"
+    },
+    "total_files": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of files in the job"
+    },
+    "processed_files": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of files processed so far"
+    },
+    "successful_files": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of successfully processed files"
+    },
+    "failed_files": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of failed file processing attempts"
+    },
+    "skipped_files": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of files skipped during processing"
+    },
+    "skipped_reasons": {
+      "type": "object",
+      "properties": {
+        "unknown_format": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Files skipped due to unknown format"
+        },
+        "file_size_limit": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Files skipped due to size limit"
+        },
+        "page_limit": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Files skipped due to page limit"
+        }
+      },
+      "required": ["unknown_format", "file_size_limit", "page_limit"],
+      "additionalProperties": false
+    },
+    "corrupt_files": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of corrupt files detected"
+    },
+    "start_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Job start timestamp in ISO 8601 format"
+    },
+    "end_time": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Job completion timestamp in ISO 8601 format"
+    },
+    "current_file": {
+      "type": ["string", "null"],
+      "description": "Currently processing file name"
+    },
+    "progress_percentage": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Job progress percentage"
+    },
+    "metadata_options": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["title", "author", "topic", "published_date", "abstract", "keywords", "references", "sections", "full_text"]
+      },
+      "description": "List of metadata fields to extract"
+    },
+    "data_source": {
+      "type": "string",
+      "enum": ["Local", "S3"],
+      "description": "Source of the files being processed"
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/FileProcessingResult"
+      },
+      "description": "List of file processing results"
+    }
+  },
+  "required": [
+    "job_id", "status", "total_files", "processed_files", 
+    "successful_files", "failed_files", "skipped_files", 
+    "skipped_reasons", "corrupt_files", "start_time", 
+    "end_time", "current_file", "progress_percentage", 
+    "metadata_options", "data_source", "results"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "FileProcessingResult": {
+      "type": "object",
+      "properties": {
+        "filename": {
+          "type": "string",
+          "description": "Name of the processed file"
+        },
+        "success": {
+          "type": "boolean",
+          "description": "Whether file processing was successful"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Processing timestamp in ISO 8601 format"
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Extracted metadata from the file",
+          "additionalProperties": true
+        },
+        "error": {
+          "type": ["string", "null"],
+          "description": "Error message if processing failed"
+        },
+        "skip_reason": {
+          "type": ["string", "null"],
+          "enum": ["unknown_format", "file_size_limit", "page_limit", null],
+          "description": "Reason for skipping the file"
+        }
+      },
+      "required": ["filename", "success", "timestamp", "metadata", "error", "skip_reason"],
+      "additionalProperties": false
+    }
+  }
+}

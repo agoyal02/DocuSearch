@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "File Processing Result Schema",
+  "description": "Result of processing a single file in DocuSearch application",
+  "properties": {
+    "filename": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Name of the processed file"
+    },
+    "success": {
+      "type": "boolean",
+      "description": "Whether file processing was successful"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Processing timestamp in ISO 8601 format"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Extracted metadata from the file",
+      "properties": {
+        "title": {"type": "string"},
+        "author": {"type": "string"},
+        "topic": {"type": "string"},
+        "published_date": {"type": "string"},
+        "abstract": {"type": "string"},
+        "keywords": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "references": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": {"type": "string"},
+              "content": {"type": "string"}
+            },
+            "required": ["title", "content"]
+          }
+        },
+        "full_text": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "error": {
+      "type": ["string", "null"],
+      "description": "Error message if processing failed"
+    },
+    "skip_reason": {
+      "type": ["string", "null"],
+      "enum": ["unknown_format", "file_size_limit", "page_limit", null],
+      "description": "Reason for skipping the file"
+    }
+  },
+  "required": ["filename", "success", "timestamp", "metadata", "error", "skip_reason"],
+  "additionalProperties": false
+}

@@ -1,0 +1,115 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Document Metadata Schema",
+  "description": "Complete metadata extracted from a document in DocuSearch application",
+  "properties": {
+    "file_type": {
+      "type": "string",
+      "enum": ["PDF", "DOCX", "TXT", "HTML"],
+      "description": "Type of the processed file"
+    },
+    "file_size": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "File size in bytes"
+    },
+    "upload_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Upload timestamp in ISO 8601 format"
+    },
+    "job_id": {
+      "type": ["string", "null"],
+      "pattern": "^[a-f0-9]{8}$",
+      "description": "Associated job ID if processed in batch"
+    },
+    "parser": {
+      "type": "string",
+      "enum": ["GROBID", "PyPDF2", "python-docx", "BeautifulSoup", "LLM"],
+      "description": "Parser used to extract metadata"
+    },
+    "title": {
+      "type": "string",
+      "description": "Document title"
+    },
+    "author": {
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "Single author as string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "first_name": {"type": "string"},
+              "last_name": {"type": "string"},
+              "full_name": {"type": "string"}
+            },
+            "required": ["first_name", "last_name", "full_name"],
+            "additionalProperties": false
+          },
+          "description": "Multiple authors as structured objects"
+        }
+      ]
+    },
+    "published_date": {
+      "type": "string",
+      "description": "Publication date"
+    },
+    "topic": {
+      "type": "string",
+      "description": "Document topic or subject"
+    },
+    "abstract": {
+      "type": "string",
+      "description": "Document abstract"
+    },
+    "keywords": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Document keywords"
+    },
+    "references": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Document references"
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Section title"
+          },
+          "content": {
+            "type": "string",
+            "description": "Section content"
+          }
+        },
+        "required": ["title", "content"],
+        "additionalProperties": false
+      },
+      "description": "Document sections"
+    },
+    "full_text": {
+      "type": "string",
+      "description": "Complete document text"
+    }
+  },
+  "required": [
+    "file_type", "file_size", "upload_date", "job_id", 
+    "parser", "title", "author", "published_date", 
+    "topic", "abstract", "keywords", "references", 
+    "sections", "full_text"
+  ],
+  "additionalProperties": false
+}
