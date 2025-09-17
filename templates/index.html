@@ -850,8 +850,32 @@
         <div class="main-content">
             <!-- Upload Section -->
             <div class="upload-section">
-                <h2>Upload Documents from Directory</h2>
+                <!-- Data Source selector moved to top -->
+                <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #eee;">
+                    <h3 style="margin-bottom:8px;">Data Source</h3>
+                    <label style="margin-right:16px;">
+                        <input type="radio" name="sourceType" value="local" checked> Local Directory
+                    </label>
+                    <label>
+                        <input type="radio" name="sourceType" value="s3"> S3 Bucket
+                    </label>
+
+                    <div id="s3Inputs" style="display:none; margin-top:12px;">
+                        <input type="text" id="s3Bucket" placeholder="S3 Bucket (required)" style="width: 48%; padding:8px; margin-right: 8px;">
+                        <div style="font-size: 0.85em; color: #6c757d; margin: 6px 0 10px 0;">
+                            Recommended test bucket: <code>documents-papers</code>
+                        </div>
+                        <input type="text" id="s3Prefix" placeholder="Prefix (optional)" style="width: 48%; padding:8px;">
+                        <div style="margin-top:10px; display:flex; gap:10px;">
+                            <button id="s3ProcessBtn" class="upload-btn">Process from S3</button>
+                        </div>
+                        <div id="s3Status" style="margin-top:8px;"></div>
+                    </div>
+                </div>
+
+                <h2 id="localHeading">Upload Documents from Directory</h2>
                 <form id="uploadForm" enctype="multipart/form-data">
+                    <div id="localInputs">
                     <div class="directory-input-wrapper">
                         <input type="file" id="directoryInput" class="directory-input" webkitdirectory directory multiple>
                         <label for="directoryInput" class="directory-input-label">
@@ -869,6 +893,7 @@
                         <div class="file-count" id="fileCount">
                             <!-- File count will be displayed here -->
                         </div>
+                    </div>
                     </div>
                     
                     <!-- Metadata Extraction Options -->
@@ -929,29 +954,6 @@
                     </button>
                 </form>
                 <div id="uploadStatus"></div>
-
-                <!-- Source selector -->
-                <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid #eee;">
-                    <h3 style="margin-bottom:8px;">Source</h3>
-                    <label style="margin-right:16px;">
-                        <input type="radio" name="sourceType" value="local" checked> Local Directory
-                    </label>
-                    <label>
-                        <input type="radio" name="sourceType" value="s3"> S3 Bucket
-                    </label>
-
-                    <div id="s3Inputs" style="display:none; margin-top:12px;">
-                        <input type="text" id="s3Bucket" placeholder="S3 Bucket (required)" style="width: 48%; padding:8px; margin-right: 8px;">
-                        <div style="font-size: 0.85em; color: #6c757d; margin: 6px 0 10px 0;">
-                            Recommended test bucket: <code>documents-papers</code>
-                        </div>
-                        <input type="text" id="s3Prefix" placeholder="Prefix (optional)" style="width: 48%; padding:8px;">
-                        <div style="margin-top:10px; display:flex; gap:10px;">
-                            <button id="s3ProcessBtn" class="upload-btn">Process from S3</button>
-                        </div>
-                        <div id="s3Status" style="margin-top:8px;"></div>
-                    </div>
-                </div>
                 
                 <!-- Job Results Section -->
                 <div class="job-results" id="jobResults">
@@ -990,6 +992,10 @@
             r.addEventListener('change', () => {
                 const isS3 = document.querySelector('input[name="sourceType"]:checked').value === 's3';
                 document.getElementById('s3Inputs').style.display = isS3 ? 'block' : 'none';
+                // Toggle local directory UI
+                document.getElementById('localInputs').style.display = isS3 ? 'none' : 'block';
+                document.getElementById('localHeading').style.display = isS3 ? 'none' : 'block';
+                document.getElementById('uploadBtn').style.display = isS3 ? 'none' : 'inline-block';
             });
         });
 
