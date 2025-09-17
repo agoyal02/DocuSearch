@@ -4,13 +4,59 @@ A powerful document parsing, extraction and search application built with Flask 
 
 ## 🚀 Quick Start
 
+### Option 1: One-Command Startup (Recommended)
+
+```bash
+# Clone and start everything with one command
+git clone <repository-url>
+cd DocuParse
+./start_all_services.sh
+
+# Open browser to http://localhost:5000
+```
+
+**That's it!** The script will automatically:
+- ✅ Install Python dependencies (pip, virtual environment)
+- ✅ Install Docker and docker-compose
+- ✅ Start GROBID service
+- ✅ Start DocuSearch application
+- ✅ Create all necessary directories
+
+### Option 2: Quick Start (Minimal Output)
+
+```bash
+# Clone and quick start
+git clone <repository-url>
+cd DocuParse
+./quick_start.sh
+
+# Open browser to http://localhost:5000
+```
+
+### Option 3: Make Commands
+
 ```bash
 # Clone and setup
+git clone <repository-url>
+cd DocuParse
+make install
+make start
+
+# Open browser to http://localhost:5000
+```
+
+### Option 4: Manual Setup (Traditional)
+
+```bash
+# Clone and setup manually
 git clone <repository-url>
 cd DocuParse
 python3 -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
+
+# Start GROBID (optional)
+./start_grobid.sh
 
 # Run the application
 python app.py
@@ -18,21 +64,23 @@ python app.py
 # Open browser to http://localhost:5000
 ```
 
-**That's it!** The application will automatically create necessary directories and start running.
-
 ## Features
 
-- **Multi-format Support**: Parse PDF, DOCX, TXT, and HTML documents
-- **Intelligent Search**: Full-text search with relevance scoring
-- **Web Interface**: Modern, responsive web UI with collapsible sections
-- **REST API**: Complete API endpoints for integration
-- **Metadata Extraction**: Extract document metadata, structure, and content
-- **Real-time Processing**: Upload, parse, and extract documents instantly
-- **Bulk Upload**: Process multiple documents with job tracking
-- **S3 Integration**: Process documents directly from S3 buckets
-- **GROBID Integration**: Enhanced PDF parsing with GROBID service
-- **Observability**: Comprehensive metrics and monitoring
-- **Job Management**: Track processing jobs with detailed status
+- **🚀 One-Command Setup**: Automatic installation of all dependencies
+- **🐳 Docker Integration**: Automatic Docker and docker-compose installation
+- **🐍 Python Management**: Automatic pip installation and virtual environment setup
+- **📄 Multi-format Support**: Parse PDF, DOCX, TXT, and HTML documents
+- **🔍 Intelligent Search**: Full-text search with relevance scoring
+- **🌐 Web Interface**: Modern, responsive web UI with collapsible sections
+- **🔌 REST API**: Complete API endpoints for integration
+- **📊 Metadata Extraction**: Extract document metadata, structure, and content
+- **⚡ Real-time Processing**: Upload, parse, and extract documents instantly
+- **📦 Bulk Upload**: Process multiple documents with job tracking
+- **☁️ S3 Integration**: Process documents directly from S3 buckets
+- **🔬 GROBID Integration**: Enhanced PDF parsing with GROBID service
+- **📈 Observability**: Comprehensive metrics and monitoring
+- **📋 Job Management**: Track processing jobs with detailed status
+- **🤖 LLM Integration**: AI-powered metadata extraction with multiple providers
 
 ## Supported Document Types
 
@@ -45,11 +93,86 @@ python app.py
 
 ### Prerequisites
 
-- **Python 3.7+** (recommended: Python 3.8 or higher)
-- **pip** (Python package installer)
 - **Git** (for cloning the repository)
+- **Internet connection** (for downloading dependencies)
 
-### Local Installation & Setup
+**Note**: All other dependencies (Python, pip, Docker, docker-compose) will be automatically installed by the startup scripts.
+
+### Service Management Scripts
+
+The application includes several startup scripts for different use cases:
+
+#### **Full-Featured Scripts** (Recommended)
+
+**Linux/macOS:**
+```bash
+./start_all_services.sh [COMMAND]
+```
+
+**Windows:**
+```cmd
+start_all_services.bat
+```
+
+**Available Commands:**
+- `start` - Start all services (default)
+- `stop` - Stop all services
+- `restart` - Restart all services
+- `status` - Show service status
+- `logs` - View application logs
+- `clean` - Clean up logs and files
+- `help` - Show help message
+
+#### **Quick Start Scripts**
+
+**Linux/macOS:**
+```bash
+./quick_start.sh
+```
+
+**Features:**
+- Minimal output
+- Fast startup
+- Basic error handling
+
+#### **Make Commands**
+
+```bash
+make help          # Show all available commands
+make install       # Install all dependencies
+make start         # Start all services
+make stop          # Stop all services
+make restart       # Restart all services
+make status        # Show service status
+make logs          # View logs
+make clean         # Clean up
+make dev           # Development mode
+make quick         # Quick start
+```
+
+#### **Standalone Installation Scripts**
+
+**Install pip separately:**
+```bash
+# Linux/macOS
+./install_pip.sh
+
+# Windows
+install_pip.bat
+```
+
+**Install Docker separately:**
+```bash
+# Linux/macOS
+./install_docker.sh
+
+# Windows
+install_docker.bat
+```
+
+### Manual Installation & Setup (Traditional)
+
+If you prefer manual setup or the automatic installation fails:
 
 1. **Clone the repository**:
    ```bash
@@ -57,18 +180,27 @@ python app.py
    cd DocuSearch
    ```
 
-2. **Create a virtual environment** (recommended):
+2. **Install Python 3.7+**:
+   - Download from: https://www.python.org/downloads/
+   - Ensure pip is included
+
+3. **Create a virtual environment**:
    ```bash
    python3 -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
-3. **Install dependencies**:
+4. **Install dependencies**:
    ```bash
    pip install -r requirements.txt
    ```
 
-4. **Set up GROBID (optional but recommended for enhanced PDF parsing)**:
+5. **Install Docker**:
+   - Linux: Follow instructions at https://docs.docker.com/engine/install/
+   - macOS: Download Docker Desktop from https://www.docker.com/products/docker-desktop
+   - Windows: Download Docker Desktop from https://www.docker.com/products/docker-desktop
+
+6. **Set up GROBID (optional but recommended for enhanced PDF parsing)**:
    ```bash
    # Download and start GROBID service
    ./start_grobid.sh
@@ -77,13 +209,40 @@ python app.py
    curl http://localhost:8070/api/isalive
    ```
 
-5. **Run the application**:
+7. **Run the application**:
    ```bash
    python app.py
    ```
 
-6. **Access the application**:
+8. **Access the application**:
    Open your browser and go to `http://localhost:5000`
+
+### Automatic Installation Features
+
+The startup scripts provide **complete automation** for:
+
+#### **🐍 Python Environment**
+- ✅ **Python 3.7+** detection and installation guidance
+- ✅ **pip** automatic installation using multiple methods
+- ✅ **Virtual environment** creation and activation
+- ✅ **Dependencies** installation from requirements.txt
+
+#### **🐳 Docker Environment**
+- ✅ **Docker** installation via package managers (apt, yum, dnf, brew, choco, winget)
+- ✅ **docker-compose** installation and configuration
+- ✅ **Docker service** startup and enablement
+- ✅ **User permissions** management (docker group)
+
+#### **🔧 Service Management**
+- ✅ **GROBID service** startup via Docker
+- ✅ **DocuSearch application** startup
+- ✅ **Health checks** and service monitoring
+- ✅ **Error handling** with fallback instructions
+
+#### **📁 Directory Setup**
+- ✅ **Automatic creation** of required directories
+- ✅ **Permission management** for file operations
+- ✅ **Log file** setup and management
 
 ### First Run Setup
 
@@ -92,6 +251,7 @@ The application will automatically create the following directories on first run
 - `parsed_documents/` - For processed document data
 - `job_metadata/` - For job tracking data
 - `job_results/` - For job result files
+- `schemas/` - For JSON schema definitions
 - `metrics.json` - For metrics data
 
 ### Environment Variables (Optional)
@@ -308,7 +468,95 @@ The `SearchEngine` class provides:
 
 ## Troubleshooting
 
-### Common Issues
+### Automatic Installation Issues
+
+**Startup script fails**:
+```bash
+# Check script permissions
+chmod +x start_all_services.sh
+
+# Run with verbose output
+bash -x start_all_services.sh
+
+# Check system requirements
+./start_all_services.sh help
+```
+
+**Docker installation fails**:
+```bash
+# Install Docker manually
+./install_docker.sh
+
+# Check Docker service status
+sudo systemctl status docker
+
+# Add user to docker group
+sudo usermod -aG docker $USER
+newgrp docker
+```
+
+**pip installation fails**:
+```bash
+# Install pip manually
+./install_pip.sh
+
+# Check Python installation
+python3 --version
+
+# Verify pip installation
+pip3 --version
+```
+
+**Permission denied errors**:
+```bash
+# Fix script permissions
+chmod +x *.sh
+
+# Check directory permissions
+ls -la
+
+# Run with sudo if needed (for Docker installation)
+sudo ./start_all_services.sh
+```
+
+### Service Management Issues
+
+**Services won't start**:
+```bash
+# Check service status
+./start_all_services.sh status
+
+# View logs
+./start_all_services.sh logs
+
+# Restart services
+./start_all_services.sh restart
+```
+
+**Port conflicts**:
+```bash
+# Check what's using ports
+lsof -i :5000  # DocuSearch
+lsof -i :8070  # GROBID
+
+# Kill conflicting processes
+sudo kill -9 <PID>
+```
+
+**Docker issues**:
+```bash
+# Check Docker status
+docker --version
+docker-compose --version
+
+# Restart Docker service
+sudo systemctl restart docker
+
+# Check Docker logs
+docker-compose logs grobid
+```
+
+### Application Issues
 
 **Application won't start**:
 ```bash
@@ -316,6 +564,7 @@ The `SearchEngine` class provides:
 python3 --version
 
 # Verify dependencies
+source venv/bin/activate
 pip install -r requirements.txt
 
 # Check for port conflicts
@@ -331,7 +580,7 @@ curl http://localhost:8070/api/isalive
 ./start_grobid.sh
 
 # Check GROBID logs
-tail -f grobid.log
+docker-compose logs grobid
 ```
 
 **File upload errors**:
@@ -372,6 +621,80 @@ curl http://localhost:5000/metrics
 # GROBID status
 curl http://localhost:5000/grobid_status
 ```
+
+## 🚀 Startup Scripts Reference
+
+### Available Scripts
+
+| Script | Platform | Description |
+|--------|----------|-------------|
+| `start_all_services.sh` | Linux/macOS | Full-featured service manager |
+| `start_all_services.bat` | Windows | Windows equivalent with full features |
+| `quick_start.sh` | Linux/macOS | Simple, fast startup |
+| `install_pip.sh` | Linux/macOS | Standalone pip installation |
+| `install_pip.bat` | Windows | Windows pip installation |
+| `install_docker.sh` | Linux/macOS | Standalone Docker installation |
+| `install_docker.bat` | Windows | Windows Docker installation |
+| `Makefile` | All | Make commands for all operations |
+
+### Script Features
+
+#### **Full-Featured Scripts**
+- ✅ **Comprehensive error checking** and validation
+- ✅ **Service health monitoring** with colored output
+- ✅ **Automatic dependency installation** (Python, pip, Docker)
+- ✅ **Multiple management commands** (start/stop/restart/status/logs/clean)
+- ✅ **Progress indicators** and status reporting
+- ✅ **Port conflict detection** and resolution
+
+#### **Quick Start Scripts**
+- ✅ **Minimal output** for fast startup
+- ✅ **Basic error handling**
+- ✅ **Automatic installation** of missing dependencies
+
+#### **Standalone Installation Scripts**
+- ✅ **Multiple installation methods** with fallbacks
+- ✅ **User installation** (no admin required for pip)
+- ✅ **Cross-platform support**
+- ✅ **Clear error messages** and solutions
+
+### Usage Examples
+
+```bash
+# One-command startup (recommended)
+./start_all_services.sh
+
+# Service management
+./start_all_services.sh start
+./start_all_services.sh stop
+./start_all_services.sh restart
+./start_all_services.sh status
+./start_all_services.sh logs
+
+# Quick start
+./quick_start.sh
+
+# Make commands
+make install
+make start
+make stop
+make status
+
+# Standalone installations
+./install_pip.sh
+./install_docker.sh
+```
+
+### Platform Support
+
+| Feature | Linux | macOS | Windows |
+|---------|-------|-------|---------|
+| **Python Installation** | ✅ | ✅ | ✅ |
+| **pip Installation** | ✅ | ✅ | ✅ |
+| **Docker Installation** | ✅ | ✅ | ✅ |
+| **docker-compose** | ✅ | ✅ | ✅ |
+| **Service Management** | ✅ | ✅ | ✅ |
+| **Health Monitoring** | ✅ | ✅ | ✅ |
 
 ## Development
 

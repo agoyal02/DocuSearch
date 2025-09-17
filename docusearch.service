@@ -1,0 +1,20 @@
+[Unit]
+Description=DocuSearch Document Processing Service
+After=network.target docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/path/to/DocuSearch
+Environment=PATH=/path/to/DocuSearch/venv/bin
+ExecStartPre=/usr/bin/docker-compose -f /path/to/DocuSearch/docker-compose.yml up -d grobid
+ExecStartPre=/bin/sleep 30
+ExecStart=/path/to/DocuSearch/venv/bin/python /path/to/DocuSearch/app.py
+ExecStop=/usr/bin/docker-compose -f /path/to/DocuSearch/docker-compose.yml down
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
