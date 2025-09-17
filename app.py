@@ -7,6 +7,7 @@ from search_engine import SearchEngine
 from job_manager import job_manager
 from config import Config
 from metrics_collector import metrics_collector
+from llm_service import llm_service
 import tempfile
 import shutil
 import glob
@@ -61,6 +62,22 @@ def upload_file():
     except:
         metadata_options = ['title', 'author', 'topic']  # Default options
     
+    # Get parser type
+    parser_type = request.form.get('parser_type', 'local')
+    
+    # Get LLM configuration if using LLM
+    if parser_type in ['llm', 'auto']:
+        llm_provider = request.form.get('llm_provider', 'openai')
+        llm_api_key = request.form.get('llm_api_key', '')
+        llm_model = request.form.get('llm_model', 'gpt-3.5-turbo')
+        llm_base_url = request.form.get('llm_base_url', '')
+        
+        # Update LLM service configuration
+        llm_service.provider = llm_provider
+        llm_service.api_key = llm_api_key
+        llm_service.model = llm_model
+        llm_service.base_url = llm_base_url
+    
     if file:
         # Save uploaded file
         filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
@@ -68,8 +85,8 @@ def upload_file():
         file.save(filepath)
         
         try:
-            # Parse the document with selected metadata options
-            parsed_content = parser.parse_document(filepath, metadata_options)
+            # Parse the document with selected metadata options and parser type
+            parsed_content = parser.parse_document(filepath, metadata_options, parser_type=parser_type)
             
             # Save parsed content
             parsed_filename = f"parsed_{filename}.json"
@@ -221,6 +238,22 @@ def bulk_upload():
     except:
         metadata_options = ['title', 'author', 'topic']  # Default options
     
+    # Get parser type
+    parser_type = request.form.get('parser_type', 'local')
+    
+    # Get LLM configuration if using LLM
+    if parser_type in ['llm', 'auto']:
+        llm_provider = request.form.get('llm_provider', 'openai')
+        llm_api_key = request.form.get('llm_api_key', '')
+        llm_model = request.form.get('llm_model', 'gpt-3.5-turbo')
+        llm_base_url = request.form.get('llm_base_url', '')
+        
+        # Update LLM service configuration
+        llm_service.provider = llm_provider
+        llm_service.api_key = llm_api_key
+        llm_service.model = llm_model
+        llm_service.base_url = llm_base_url
+    
     # Create job
     job_id = job_manager.create_job(len(files), metadata_options, 'Local')
     
@@ -275,8 +308,8 @@ def bulk_upload():
                 metrics_collector.record_document_processing(doc_processing_time, False)
                 continue
             
-            # Parse the document with selected metadata options
-            parsed_content = parser.parse_document(filepath, metadata_options, job_id)
+            # Parse the document with selected metadata options and parser type
+            parsed_content = parser.parse_document(filepath, metadata_options, job_id, parser_type)
             
             # Save parsed content
             parsed_filename = f"parsed_{filename}.json"
@@ -298,7 +331,8 @@ def bulk_upload():
             
             # Record successful document processing metrics
             doc_processing_time = time.time() - doc_start_time
-            metrics_collector.record_document_processing(doc_processing_time, True)
+            parser_used = parsed_content.get('parser', 'local')
+            metrics_collector.record_document_processing(doc_processing_time, True, parser_used)
             
         except Exception as e:
             results['error_count'] += 1
@@ -308,7 +342,7 @@ def bulk_upload():
             
             # Record failed document processing metrics
             doc_processing_time = time.time() - doc_start_time
-            metrics_collector.record_document_processing(doc_processing_time, False)
+            metrics_collector.record_document_processing(doc_processing_time, False, parser_type)
     
     # Update metrics with final job progress
     metrics_collector.update_job_progress(job_id, results['success_count'], results['error_count'], results['skipped_count'])
@@ -385,6 +419,89 @@ def grobid_status():
         'url': parser.grobid_url,
         'message': 'GROBID service is available' if is_available else 'GROBID service is not available'
     })
+
+@app.route('/llm_status')
+def llm_status():
+    """Check LLM service status"""
+    try:
+        status = llm_service.get_status()
+        return jsonify(status)
+    except Exception as e:
+        return jsonify({
+            'enabled': False,
+            'available': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/test_llm', methods=['POST'])
+def test_llm():
+    """Test LLM connection with provided credentials"""
+    try:
+        data = request.get_json()
+        provider = data.get('provider', 'openai')
+        api_key = data.get('api_key', '')
+        model = data.get('model', 'gpt-3.5-turbo')
+        base_url = data.get('base_url', '')
+        
+        # Create a temporary LLM service instance for testing
+        from llm_service import LLMService
+        test_service = LLMService()
+        test_service.provider = provider
+        test_service.api_key = api_key
+        test_service.model = model
+        test_service.base_url = base_url
+        
+        # Test the connection
+        if test_service.is_available():
+            return jsonify({
+                'success': True,
+                'message': 'LLM connection successful'
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': 'LLM service not available'
+            })
+            
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/save_llm_config', methods=['POST'])
+def save_llm_config():
+    """Save LLM configuration"""
+    try:
+        data = request.get_json()
+        provider = data.get('provider', 'openai')
+        api_key = data.get('api_key', '')
+        model = data.get('model', 'gpt-3.5-turbo')
+        base_url = data.get('base_url', '')
+        
+        # Update the global LLM service configuration
+        llm_service.provider = provider
+        llm_service.api_key = api_key
+        llm_service.model = model
+        llm_service.base_url = base_url
+        
+        # Test the connection
+        if llm_service.is_available():
+            return jsonify({
+                'success': True,
+                'message': 'LLM configuration saved and verified'
+            })
+        else:
+            return jsonify({
+                'success': True,
+                'message': 'LLM configuration saved (connection not verified)'
+            })
+            
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 @app.route('/metrics')
 def get_metrics():
@@ -573,6 +690,7 @@ def bulk_upload_s3():
         bucket = data.get('bucket') or Config.DEFAULT_S3_BUCKET
         prefix = data.get('prefix') or Config.DEFAULT_S3_PREFIX
         metadata_options = data.get('metadata_options') or ['title', 'author', 'topic']
+        parser_type = data.get('parser_type', 'local')
         aws_region = data.get('aws_region')
         aws_access_key_id = data.get('aws_access_key_id')
         aws_secret_access_key = data.get('aws_secret_access_key')
@@ -676,7 +794,7 @@ def bulk_upload_s3():
                     continue
 
                 # Parse
-                parsed_content = parser.parse_document(local_path, metadata_options, job_id)
+                parsed_content = parser.parse_document(local_path, metadata_options, job_id, parser_type)
 
                 # Save parsed JSON
                 timestamped_name = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{original_filename}"

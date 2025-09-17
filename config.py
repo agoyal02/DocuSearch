@@ -50,6 +50,16 @@ class Config:
     DEFAULT_S3_PREFIX = os.getenv('DOCUSEARCH_S3_PREFIX', '')
     S3_MAX_KEYS = int(os.getenv('DOCUSEARCH_S3_MAX_KEYS', '10000'))
     
+    # LLM Configuration
+    LLM_ENABLED = os.getenv('LLM_ENABLED', 'true').lower() == 'true'  # Default to enabled
+    LLM_PROVIDER = os.getenv('LLM_PROVIDER', 'openai')  # openai, anthropic, local
+    LLM_API_KEY = os.getenv('LLM_API_KEY', '')
+    LLM_MODEL = os.getenv('LLM_MODEL', 'gpt-3.5-turbo')
+    LLM_BASE_URL = os.getenv('LLM_BASE_URL', '')  # For local models
+    LLM_MAX_TOKENS = int(os.getenv('LLM_MAX_TOKENS', '1000'))
+    LLM_TEMPERATURE = float(os.getenv('LLM_TEMPERATURE', '0.1'))
+    LLM_TIMEOUT = int(os.getenv('LLM_TIMEOUT', '30'))
+    
     @classmethod
     def get_max_file_size_bytes(cls):
         """Get maximum file size in bytes"""

@@ -34,6 +34,12 @@ class DocumentMetrics:
     total_failed: int = 0
     total_skipped: int = 0
     total_processing_time: float = 0.0
+    llm_processed: int = 0
+    llm_successful: int = 0
+    llm_failed: int = 0
+    local_processed: int = 0
+    local_successful: int = 0
+    local_failed: int = 0
 
 class MetricsCollector:
     """Centralized metrics collection and storage"""
@@ -101,10 +107,25 @@ class MetricsCollector:
                 
                 self._save_metrics()
     
-    def record_document_processing(self, processing_time: float, success: bool) -> None:
+    def record_document_processing(self, processing_time: float, success: bool, parser_type: str = 'local') -> None:
         """Record individual document processing metrics"""
         with self.lock:
             self.document_latencies.append(processing_time)
+            
+            # Track parser-specific metrics
+            if parser_type in ['llm', 'llm_fallback', 'auto_local']:
+                self.document_metrics.llm_processed += 1
+                if success:
+                    self.document_metrics.llm_successful += 1
+                else:
+                    self.document_metrics.llm_failed += 1
+            else:
+                self.document_metrics.local_processed += 1
+                if success:
+                    self.document_metrics.local_successful += 1
+                else:
+                    self.document_metrics.local_failed += 1
+            
             self._save_metrics()
     
     def get_metrics_summary(self) -> Dict:

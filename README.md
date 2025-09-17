@@ -31,6 +31,7 @@ python app.py
 - **Bulk Upload**: Process multiple documents with job tracking
 - **S3 Integration**: Process documents directly from S3 buckets
 - **GROBID Integration**: Enhanced PDF parsing with GROBID service
+- **LLM Integration**: AI-powered metadata extraction using OpenAI/Anthropic
 - **Observability**: Comprehensive metrics and monitoring
 - **Job Management**: Track processing jobs with detailed status
 
@@ -112,6 +113,15 @@ DOCUSEARCH_S3_PREFIX=documents/
 
 # GROBID Configuration
 GROBID_URL=http://localhost:8070
+
+# LLM Configuration (for AI-powered metadata extraction)
+LLM_ENABLED=true  # Default: enabled
+LLM_PROVIDER=openai  # openai, anthropic, or local
+LLM_API_KEY=your_api_key_here  # Optional: can be set via UI
+LLM_MODEL=gpt-3.5-turbo
+LLM_BASE_URL=http://localhost:11434  # For local models like Ollama
+LLM_MAX_TOKENS=1000
+LLM_TEMPERATURE=0.1
 ```
 
 ## Usage
@@ -122,6 +132,8 @@ GROBID_URL=http://localhost:8070
    - **Single File**: Use the file input to upload individual documents
    - **Bulk Upload**: Select multiple files or entire directories for batch processing
    - **S3 Integration**: Process documents directly from S3 buckets
+   - **Parser Selection**: Choose between Local Parser, LLM Extraction, or Auto mode
+   - **LLM Configuration**: Enter your API key and configure LLM settings directly in the UI
 
 2. **Search Documents**: Use the search bar to find content across all uploaded documents
 
@@ -160,12 +172,13 @@ GROBID_URL=http://localhost:8070
 - `GET /metrics` - Get system metrics in JSON format
 - `GET /metrics/prometheus` - Get metrics in Prometheus format
 - `GET /grobid_status` - Check GROBID service status
+- `GET /llm_status` - Check LLM service status
 
 ### Example API Usage
 
-**Upload a single document**:
+**Upload a single document with LLM extraction**:
 ```bash
-curl -X POST -F "file=@document.pdf" http://localhost:5000/upload
+curl -X POST -F "file=@document.pdf" -F "parser_type=llm" -F "metadata_options=[\"title\",\"author\",\"topic\"]" http://localhost:5000/upload
 ```
 
 **Bulk upload multiple documents**:
@@ -202,6 +215,25 @@ curl http://localhost:5000/jobs
 **Get job status**:
 ```bash
 curl http://localhost:5000/job_status/abc12345
+```
+
+**Check LLM status**:
+```bash
+curl http://localhost:5000/llm_status
+```
+
+**Test LLM connection**:
+```bash
+curl -X POST -H "Content-Type: application/json" \
+  -d '{"provider":"openai","api_key":"your_key","model":"gpt-3.5-turbo"}' \
+  http://localhost:5000/test_llm
+```
+
+**Save LLM configuration**:
+```bash
+curl -X POST -H "Content-Type: application/json" \
+  -d '{"provider":"openai","api_key":"your_key","model":"gpt-3.5-turbo"}' \
+  http://localhost:5000/save_llm_config
 ```
 
 ## Project Structure

@@ -848,6 +848,473 @@
             background: #5a6268;
         }
         
+        /* Configuration Panel Styles */
+        .config-panel {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .config-panel h3 {
+            margin: 0 0 16px 0;
+            color: #495057;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+        
+        .config-group {
+            margin-bottom: 16px;
+        }
+        
+        .config-group:last-child {
+            margin-bottom: 0;
+        }
+        
+        .config-label {
+            display: block;
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+        
+        .radio-group {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+        
+        .radio-option:hover {
+            background-color: #e9ecef;
+        }
+        
+        .radio-option input[type="radio"] {
+            margin: 0;
+        }
+        
+        .radio-option span {
+            font-size: 0.9em;
+            color: #495057;
+        }
+        
+        .status-indicator {
+            margin-top: 8px;
+            font-size: 0.85em;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        
+        .status-indicator.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-indicator.warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .status-indicator.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        /* S3 Configuration Styles */
+        .s3-config {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 16px;
+        }
+        
+        .s3-config h4 {
+            margin: 0 0 16px 0;
+            color: #495057;
+            font-size: 1em;
+            font-weight: 600;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 0.9em;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+        
+        .help-text {
+            font-size: 0.8em;
+            color: #6c757d;
+            margin-top: 4px;
+        }
+        
+        .help-text code {
+            background-color: #e9ecef;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 0.85em;
+        }
+        
+        /* LLM Configuration Styles */
+        .llm-config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .llm-field {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .field-label {
+            font-size: 0.9em;
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 6px;
+        }
+        
+        .form-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 0.9em;
+            background: white;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        .form-select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+        
+        .llm-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+        
+        .action-btn.primary {
+            background: #007bff;
+            color: white;
+        }
+        
+        .action-btn.primary:hover {
+            background: #0056b3;
+        }
+        
+        /* Metadata Options Styles */
+        .metadata-options {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .metadata-options h3 {
+            margin: 0 0 16px 0;
+            color: #495057;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+        
+        /* Search Section Styles */
+        .search-section {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 32px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .search-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        
+        .search-header h2 {
+            margin: 0 0 12px 0;
+            color: #495057;
+            font-size: 1.5em;
+            font-weight: 700;
+        }
+        
+        .search-description {
+            margin: 0;
+            color: #6c757d;
+            font-size: 1em;
+        }
+        
+        .search-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .search-input-wrapper {
+            width: 100%;
+            position: relative;
+        }
+        
+        .search-button-wrapper {
+            display: flex;
+            justify-content: center;
+        }
+        
+        .search-input {
+            width: 100%;
+            height: 56px;
+            padding: 0 24px;
+            border: 2px solid #e1e5e9;
+            border-radius: 28px;
+            font-size: 16px;
+            line-height: 1.5;
+            transition: all 0.3s ease;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.15), 0 4px 16px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .search-input::placeholder {
+            color: #9ca3af;
+            font-weight: 400;
+        }
+        
+        .search-btn {
+            height: 48px;
+            padding: 0 48px;
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            border-radius: 24px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 160px;
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+            white-space: nowrap;
+        }
+        
+        .search-btn:hover {
+            background: linear-gradient(135deg, #0056b3, #004085);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+        }
+        
+        .search-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+        }
+        
+        .search-results {
+            margin-top: 32px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .search-section {
+                padding: 24px;
+            }
+            
+            .search-input {
+                height: 50px;
+                font-size: 16px;
+            }
+            
+            .search-btn {
+                height: 50px;
+                min-width: 140px;
+            }
+        }
+        
+        /* Section Header Styles */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .section-header:hover {
+            background: #e9ecef;
+        }
+        
+        .section-title h2 {
+            margin: 0 0 4px 0;
+            color: #495057;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+        
+        .section-description {
+            margin: 0;
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        
+        .section-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .section-toggle {
+            font-size: 1.2em;
+            color: #6c757d;
+            transition: transform 0.2s;
+        }
+        
+        .section-toggle.expanded {
+            transform: rotate(180deg);
+        }
+        
+        .section-content {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            padding: 24px;
+        }
+        
+        /* Action Button Styles */
+        .action-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .action-btn.danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .action-btn.danger:hover {
+            background: #c82333;
+        }
+        
+        .action-btn.secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .action-btn.secondary:hover {
+            background: #5a6268;
+        }
+        
+        /* Job History Styles */
+        .job-history-section {
+            margin-bottom: 24px;
+        }
+        
+        .job-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        /* Metrics Section Styles */
+        .metrics-section {
+            margin-bottom: 24px;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .metric-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        .metric-card h4 {
+            margin: 0 0 12px 0;
+            color: #495057;
+            font-size: 1em;
+            font-weight: 600;
+        }
+        
+        .metric-value {
+            font-size: 2em;
+            font-weight: 700;
+            color: #007bff;
+            margin-bottom: 8px;
+        }
+        
+        .metric-label {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        
+        .metric-card.failed .metric-value {
+            color: #dc3545;
+        }
+        
+        .metric-card.warning .metric-value {
+            color: #ffc107;
+        }
+        
+        .metric-card.info .metric-value {
+            color: #17a2b8;
+        }
+        
+        .metric-card.success .metric-value {
+            color: #28a745;
+        }
+        
         .job-action-btn.primary {
             background: #28a745;
         }
@@ -1032,49 +1499,117 @@
         <div class="main-content">
             <!-- Upload Section -->
             <div class="upload-section">
-                <!-- Data Source selector moved to top -->
-                <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #eee;">
-                    <h3 style="margin-bottom:8px;">Data Source</h3>
-                    <label style="margin-right:16px;">
-                        <input type="radio" name="sourceType" value="local" checked> Local Directory
-                    </label>
-                    <label>
-                        <input type="radio" name="sourceType" value="s3"> S3 Bucket
-                    </label>
-
-                    <div id="s3Inputs" style="display:none; margin-top:12px;">
-                        <!-- S3 Bucket Type Selection -->
-                        <div style="margin-bottom: 16px;">
-                            <label style="display:block; margin-bottom:8px; font-weight:500;">S3 Bucket Type:</label>
-                            <div class="radio-group" style="display: flex; gap: 20px;">
-                                <input type="radio" id="s3Public" name="s3BucketType" value="public" checked>
-                                <label for="s3Public">Public Bucket</label>
-                                <input type="radio" id="s3Private" name="s3BucketType" value="private">
-                                <label for="s3Private">Private Bucket</label>
+                <!-- Configuration Panel -->
+                <div class="config-panel">
+                    <h3>Configuration</h3>
+                    
+                    <!-- Data Source Selection -->
+                    <div class="config-group">
+                        <label class="config-label">Data Source</label>
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" name="sourceType" value="local" checked>
+                                <span>Local Directory</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="sourceType" value="s3">
+                                <span>S3 Bucket</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Parser Selection -->
+                    <div class="config-group">
+                        <label class="config-label">Metadata Extraction</label>
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" name="parserType" value="local">
+                                <span>Local Parser</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="parserType" value="llm" checked>
+                                <span>LLM Extraction</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="parserType" value="auto">
+                                <span>Auto (LLM + Fallback)</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- LLM Configuration (Hidden by default) -->
+                    <div class="config-group" id="llmConfigGroup" style="display: none;">
+                        <label class="config-label">LLM Configuration</label>
+                        <div id="llmStatus" class="status-indicator"></div>
+                        <div class="llm-config-grid">
+                            <div class="llm-field">
+                                <label class="field-label">Provider</label>
+                                <select id="llmProvider" class="form-select">
+                                    <option value="openai">OpenAI</option>
+                                    <option value="anthropic">Anthropic</option>
+                                    <option value="local">Local Model</option>
+                                </select>
+                            </div>
+                            <div class="llm-field">
+                                <label class="field-label">API Key</label>
+                                <input type="password" id="llmApiKey" class="form-input" placeholder="Enter your API key">
+                            </div>
+                            <div class="llm-field">
+                                <label class="field-label">Model</label>
+                                <input type="text" id="llmModel" class="form-input" placeholder="gpt-3.5-turbo" value="gpt-3.5-turbo">
+                            </div>
+                            <div class="llm-field" id="llmBaseUrlField" style="display: none;">
+                                <label class="field-label">Base URL</label>
+                                <input type="text" id="llmBaseUrl" class="form-input" placeholder="http://localhost:11434">
                             </div>
                         </div>
+                        <div class="llm-actions">
+                            <button id="testLlmBtn" class="action-btn secondary" onclick="testLLMConnection()">
+                                🧪 Test Connection
+                            </button>
+                            <button id="saveLlmBtn" class="action-btn primary" onclick="saveLLMConfig()">
+                                💾 Save Config
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- S3 Configuration (Hidden by default) -->
+                <div id="s3Inputs" class="s3-config" style="display:none;">
+                    <h4>S3 Configuration</h4>
+                    
+                    <!-- S3 Bucket Type Selection -->
+                    <div class="config-group">
+                        <label class="config-label">Bucket Type</label>
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" id="s3Public" name="s3BucketType" value="public" checked>
+                                <span>Public Bucket</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" id="s3Private" name="s3BucketType" value="private">
+                                <span>Private Bucket</span>
+                            </label>
+                        </div>
+                    </div>
                         
-                        <!-- Public Bucket Fields -->
-                        <div id="publicBucketFields">
-                            <div style="margin-bottom: 12px;">
-                                <label style="display:block; margin-bottom:4px; font-weight:500;">AWS Region:</label>
-                                <input type="text" id="awsRegion" placeholder="AWS Region" style="width: 100%; padding:8px; margin-bottom:4px;">
-                                <div style="font-size: 0.85em; color: #6c757d;">
-                                    Recommended: <code>us-east-1</code>
-                                </div>
-                            </div>
-                            
-                            <div style="margin-bottom: 12px;">
-                                <label style="display:block; margin-bottom:4px; font-weight:500;">S3 Bucket Name:</label>
-                                <input type="text" id="s3Bucket" placeholder="S3 Bucket (required)" style="width: 100%; padding:8px; margin-bottom:4px;">
-                                <div style="font-size: 0.85em; color: #6c757d;">
-                                    Example: <code>documents-papers</code>
-                                </div>
-                            </div>
-                            
-                            <div style="margin-bottom: 12px;">
-                                <label style="display:block; margin-bottom:4px; font-weight:500;">S3 Prefix (optional):</label>
-                                <input type="text" id="s3Prefix" placeholder="Prefix (optional)" style="width: 100%; padding:8px;">
+                    <!-- Public Bucket Fields -->
+                    <div id="publicBucketFields">
+                        <div class="config-group">
+                            <label class="config-label">AWS Region</label>
+                            <input type="text" id="awsRegion" placeholder="us-east-1" class="form-input">
+                            <div class="help-text">Recommended: us-east-1</div>
+                        </div>
+                        
+                        <div class="config-group">
+                            <label class="config-label">S3 Bucket Name</label>
+                            <input type="text" id="s3Bucket" placeholder="my-bucket-name" class="form-input">
+                            <div class="help-text">Example: documents-papers</div>
+                        </div>
+                        
+                        <div class="config-group">
+                            <label class="config-label">S3 Prefix (optional)</label>
+                            <input type="text" id="s3Prefix" placeholder="documents/" class="form-input">
                             </div>
                         </div>
                         
@@ -1133,10 +1668,10 @@
                     </div>
                     </div>
                     
-                    <!-- Metadata Extraction Options -->
-                    <div class="metadata-options">
-                        <h3>Select Metadata to Extract:</h3>
-                        <div class="metadata-checkboxes">
+                <!-- Metadata Extraction Options -->
+                <div class="metadata-options">
+                    <h3>Metadata to Extract</h3>
+                    <div class="metadata-checkboxes">
                             <label class="checkbox-label">
                                 <input type="checkbox" id="extractAuthor" name="metadata" value="author" checked>
                                 <span class="checkmark"></span>
@@ -1210,34 +1745,60 @@
             
             <!-- Search Section -->
             <div class="search-section">
-                <h2>Search Documents</h2>
-                <input type="text" id="searchInput" class="search-input" placeholder="Search document by Topic, Author, Title etc">
-                <button class="search-btn" onclick="searchDocuments()">Search</button>
-                <div id="searchResults"></div>
+                <div class="search-header">
+                    <h2>🔍 Search Documents</h2>
+                    <p class="search-description">Find documents by topic, author, title, or content</p>
+                </div>
+                <div class="search-container">
+                    <div class="search-input-wrapper">
+                        <input type="text" id="searchInput" class="search-input" placeholder="Enter your search terms here...">
+                    </div>
+                    <div class="search-button-wrapper">
+                        <button class="search-btn" onclick="searchDocuments()">
+                            Search
+                        </button>
+                    </div>
+                </div>
+                <div id="searchResults" class="search-results"></div>
             </div>
             
-            <!-- Documents List -->
-            <div class="documents-list">
-                <div class="documents-header" onclick="toggleJobHistory()">
-                    <h2 style="display:flex; align-items:center; gap:12px; margin:0;">
-                        📋 Job History
-                        <button id="clearHistoryBtn" class="job-action-btn" onclick="event.stopPropagation(); clearAllHistory();" style="margin-left:auto;">🧹 Clear History</button>
-                    </h2>
-                    <span class="documents-toggle" id="documentsToggle">▼</span>
+            <!-- Job History Section -->
+            <div class="job-history-section">
+                <div class="section-header" onclick="toggleJobHistory()">
+                    <div class="section-title">
+                        <h2>📋 Job History</h2>
+                        <p class="section-description">View and manage processing jobs</p>
+                    </div>
+                    <div class="section-actions">
+                        <button id="clearHistoryBtn" class="action-btn danger" onclick="event.stopPropagation(); clearAllHistory();">
+                            🧹 Clear All
+                        </button>
+                        <span class="section-toggle" id="documentsToggle">▼</span>
+                    </div>
                 </div>
-                <div class="documents-content" id="documentsContent" style="display: none;">
-                    <div id="documentsList"></div>
+                <div class="section-content" id="documentsContent" style="display: none;">
+                    <div id="documentsList" class="job-list"></div>
                 </div>
             </div>
             
-            <!-- Collapsible Metrics Section -->
+            <!-- System Metrics Section -->
             <div class="metrics-section" id="metricsSection">
-                <div class="metrics-header" onclick="toggleMetrics()">
-                    <h2>📊 System Metrics</h2>
-                    <span class="metrics-toggle" id="metricsToggle">▼</span>
+                <div class="section-header" onclick="toggleMetrics()">
+                    <div class="section-title">
+                        <h2>📊 System Metrics</h2>
+                        <p class="section-description">Monitor application performance and usage</p>
+                    </div>
+                    <div class="section-actions">
+                        <button class="action-btn secondary" onclick="event.stopPropagation(); loadMetrics();">
+                            🔄 Refresh
+                        </button>
+                        <span class="section-toggle" id="metricsToggle">▼</span>
+                    </div>
                 </div>
-                <div class="metrics-content" id="metricsContent" style="display: none;">
-                    <!-- Metrics will be populated by JavaScript -->
+                <div class="section-content" id="metricsContent" style="display: none;">
+                    <div class="metrics-grid" id="metricsGrid">
+                        <!-- Metrics will be populated by JavaScript -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -1451,6 +2012,16 @@
                 const formData = new FormData();
                 formData.append('file', files[0]);
                 formData.append('metadata_options', JSON.stringify(selectedMetadata));
+                formData.append('parser_type', document.querySelector('input[name="parserType"]:checked').value);
+                
+                // Add LLM configuration if using LLM
+                const parserType = document.querySelector('input[name="parserType"]:checked').value;
+                if (parserType === 'llm' || parserType === 'auto') {
+                    formData.append('llm_provider', document.getElementById('llmProvider').value);
+                    formData.append('llm_api_key', document.getElementById('llmApiKey').value);
+                    formData.append('llm_model', document.getElementById('llmModel').value);
+                    formData.append('llm_base_url', document.getElementById('llmBaseUrl').value);
+                }
                 
                 try {
                     const response = await fetch('/upload', {
@@ -1458,7 +2029,14 @@
                         body: formData
                     });
                     
-                    const result = await response.json();
+                    let result;
+                    try {
+                        result = await response.json();
+                    } catch (jsonError) {
+                        console.error('JSON parsing error:', jsonError);
+                        console.error('Response text:', await response.text());
+                        throw new Error('Invalid response format from server');
+                    }
                     
                     if (result.success) {
                         statusDiv.innerHTML = '<div class="success">Document uploaded and parsed successfully!</div>';
@@ -1486,6 +2064,16 @@
                     formData.append('files', file);
                 });
                 formData.append('metadata_options', JSON.stringify(selectedMetadata));
+                formData.append('parser_type', document.querySelector('input[name="parserType"]:checked').value);
+                
+                // Add LLM configuration if using LLM
+                const parserType = document.querySelector('input[name="parserType"]:checked').value;
+                if (parserType === 'llm' || parserType === 'auto') {
+                    formData.append('llm_provider', document.getElementById('llmProvider').value);
+                    formData.append('llm_api_key', document.getElementById('llmApiKey').value);
+                    formData.append('llm_model', document.getElementById('llmModel').value);
+                    formData.append('llm_base_url', document.getElementById('llmBaseUrl').value);
+                }
                 
                 try {
                     const response = await fetch('/bulk_upload', {
@@ -1493,7 +2081,14 @@
                         body: formData
                     });
                     
-                    const result = await response.json();
+                    let result;
+                    try {
+                        result = await response.json();
+                    } catch (jsonError) {
+                        console.error('JSON parsing error:', jsonError);
+                        console.error('Response text:', await response.text());
+                        throw new Error('Invalid response format from server');
+                    }
                     
                     if (result.success) {
                         // Update job status UI
@@ -1604,7 +2199,15 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
-                const result = await resp.json();
+                    
+                    let result;
+                    try {
+                        result = await resp.json();
+                    } catch (jsonError) {
+                        console.error('JSON parsing error:', jsonError);
+                        console.error('Response text:', await resp.text());
+                        throw new Error('Invalid response format from server');
+                    }
                 if (resp.ok && result.success) {
                     updateJobStatusUI(result.job_id, result.results);
                     showJobResults(result.job_id, result.results);
@@ -1635,7 +2238,15 @@
             
             try {
                 const response = await fetch(`/search?q=${encodeURIComponent(query)}`);
-                const result = await response.json();
+                
+                let result;
+                try {
+                    result = await response.json();
+                } catch (jsonError) {
+                    console.error('JSON parsing error:', jsonError);
+                    console.error('Response text:', await response.text());
+                    throw new Error('Invalid response format from server');
+                }
                 
                 if (result.results && result.results.length > 0) {
                     let html = `<h3>Search Results (${result.total} found)</h3>`;
@@ -1689,7 +2300,15 @@
             
             try {
                 const response = await fetch('/documents');
-                const result = await response.json();
+                
+                let result;
+                try {
+                    result = await response.json();
+                } catch (jsonError) {
+                    console.error('JSON parsing error:', jsonError);
+                    console.error('Response text:', await response.text());
+                    throw new Error('Invalid response format from server');
+                }
                 
                 if (result.jobs && result.jobs.length > 0) {
                     let html = '';
@@ -1881,7 +2500,15 @@
             if (!confirm(`Delete job ${jobId}? This will remove job history and all related files.`)) return;
             try {
                 const resp = await fetch(`/jobs/${jobId}`, { method: 'DELETE' });
-                const result = await resp.json();
+                
+                let result;
+                try {
+                    result = await resp.json();
+                } catch (jsonError) {
+                    console.error('JSON parsing error:', jsonError);
+                    console.error('Response text:', await resp.text());
+                    throw new Error('Invalid response format from server');
+                }
                 if (resp.ok && result.success) {
                     // Refresh list
                     loadDocuments();
@@ -1990,6 +2617,12 @@
         // Load and display metrics
         loadMetrics();
         
+        // Load LLM status
+        loadLLMStatus();
+        
+        // Initialize LLM config visibility based on default selection
+        updateLLMConfigVisibility();
+        
         // Metrics functions
         async function loadMetrics() {
             try {
@@ -2006,18 +2639,13 @@
         }
         
         function displayMetrics(metrics) {
-            const metricsContent = document.getElementById('metricsContent');
-            if (!metricsContent) return;
+            const metricsGrid = document.getElementById('metricsGrid');
+            if (!metricsGrid) return;
             
             const jobs = metrics.jobs;
             const documents = metrics.documents;
             
-            metricsContent.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h3 style="margin: 0;">System Performance</h3>
-                    <button class="metrics-refresh" onclick="loadMetrics()">🔄 Refresh</button>
-                </div>
-                <div class="metrics-grid">
+            metricsGrid.innerHTML = `
                     <div class="metric-card">
                         <div class="metric-value">${jobs.total}</div>
                         <div class="metric-label">Total Jobs</div>
@@ -2096,11 +2724,249 @@
             }
         }
         
+        // LLM Status and Parser Selection
+        async function loadLLMStatus() {
+            try {
+                const response = await fetch('/llm_status');
+                if (response.ok) {
+                    const status = await response.json();
+                    updateLLMStatus(status);
+                } else {
+                    updateLLMStatus({ enabled: false, available: false, error: 'Failed to check LLM status' });
+                }
+            } catch (error) {
+                updateLLMStatus({ enabled: false, available: false, error: error.message });
+            }
+        }
+        
+        function updateLLMStatus(status) {
+            const statusDiv = document.getElementById('llmStatus');
+            if (!statusDiv) return;
+            
+            // Clear existing classes
+            statusDiv.className = 'status-indicator';
+            
+            if (status.enabled && status.available) {
+                statusDiv.innerHTML = `✅ LLM Available (${status.provider}/${status.model})`;
+                statusDiv.classList.add('success');
+            } else if (status.enabled && !status.available) {
+                statusDiv.innerHTML = `⚠️ LLM Enabled but Unavailable (${status.provider})`;
+                statusDiv.classList.add('warning');
+            } else {
+                statusDiv.innerHTML = `❌ LLM Disabled - Using Local Parser Only`;
+                statusDiv.classList.add('error');
+            }
+            
+            // Update parser selection based on LLM availability
+            updateParserSelection(status);
+            
+            // Update status visibility
+            showLLMStatus();
+        }
+        
+        function showLLMStatus() {
+            const statusDiv = document.getElementById('llmStatus');
+            const llmConfigGroup = document.getElementById('llmConfigGroup');
+            
+            if (statusDiv && llmConfigGroup) {
+                // Only show status if LLM config is visible
+                if (llmConfigGroup.style.display !== 'none') {
+                    statusDiv.style.display = 'block';
+                } else {
+                    statusDiv.style.display = 'none';
+                }
+            }
+        }
+        
+        function updateParserSelection(llmStatus) {
+            const llmRadio = document.querySelector('input[name="parserType"][value="llm"]');
+            const autoRadio = document.querySelector('input[name="parserType"][value="auto"]');
+            const localRadio = document.querySelector('input[name="parserType"][value="local"]');
+            const llmConfigGroup = document.getElementById('llmConfigGroup');
+            
+            if (llmStatus.enabled && llmStatus.available) {
+                llmRadio.disabled = false;
+                autoRadio.disabled = false;
+            } else {
+                llmRadio.disabled = true;
+                autoRadio.disabled = true;
+                
+                // If LLM is not available, default to local parser
+                if (llmRadio.checked || autoRadio.checked) {
+                    localRadio.checked = true;
+                }
+            }
+            
+            // Show/hide LLM configuration based on selected parser type
+            updateLLMConfigVisibility();
+        }
+        
+        function updateLLMConfigVisibility() {
+            const selectedParser = document.querySelector('input[name="parserType"]:checked');
+            const llmConfigGroup = document.getElementById('llmConfigGroup');
+            const statusDiv = document.getElementById('llmStatus');
+            
+            if (selectedParser && llmConfigGroup) {
+                if (selectedParser.value === 'llm' || selectedParser.value === 'auto') {
+                    llmConfigGroup.style.display = 'block';
+                    if (statusDiv) statusDiv.style.display = 'block';
+                } else {
+                    llmConfigGroup.style.display = 'none';
+                    if (statusDiv) statusDiv.style.display = 'none';
+                }
+            }
+        }
+        
+        function updateModelPlaceholder() {
+            const provider = document.getElementById('llmProvider').value;
+            const modelInput = document.getElementById('llmModel');
+            
+            if (provider === 'anthropic') {
+                modelInput.placeholder = 'claude-sonnet-4-20250514';
+                if (!modelInput.value || modelInput.value === 'gpt-3.5-turbo') {
+                    modelInput.value = 'claude-sonnet-4-20250514';
+                }
+            } else if (provider === 'openai') {
+                modelInput.placeholder = 'gpt-3.5-turbo';
+                if (!modelInput.value || modelInput.value === 'claude-sonnet-4-20250514') {
+                    modelInput.value = 'gpt-3.5-turbo';
+                }
+            } else if (provider === 'local') {
+                modelInput.placeholder = 'llama2:7b';
+                if (!modelInput.value || modelInput.value === 'gpt-3.5-turbo' || modelInput.value === 'claude-sonnet-4-20250514') {
+                    modelInput.value = 'llama2:7b';
+                }
+            }
+        }
+        
+        // LLM Configuration Functions
+        function testLLMConnection() {
+            const provider = document.getElementById('llmProvider').value;
+            const apiKey = document.getElementById('llmApiKey').value;
+            const model = document.getElementById('llmModel').value;
+            const baseUrl = document.getElementById('llmBaseUrl').value;
+            
+            if (!apiKey && provider !== 'local') {
+                alert('Please enter an API key');
+                return;
+            }
+            
+            const testBtn = document.getElementById('testLlmBtn');
+            testBtn.textContent = '🔄 Testing...';
+            testBtn.disabled = true;
+            
+            fetch('/test_llm', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    provider: provider,
+                    api_key: apiKey,
+                    model: model,
+                    base_url: baseUrl
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ LLM connection successful!');
+                    updateLLMStatus({ enabled: true, available: true, provider: provider, model: model });
+                } else {
+                    alert('❌ LLM connection failed: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('❌ Error testing connection: ' + error.message);
+            })
+            .finally(() => {
+                testBtn.textContent = '🧪 Test Connection';
+                testBtn.disabled = false;
+            });
+        }
+        
+        function saveLLMConfig() {
+            const provider = document.getElementById('llmProvider').value;
+            const apiKey = document.getElementById('llmApiKey').value;
+            const model = document.getElementById('llmModel').value;
+            const baseUrl = document.getElementById('llmBaseUrl').value;
+            
+            if (!apiKey && provider !== 'local') {
+                alert('Please enter an API key');
+                return;
+            }
+            
+            fetch('/save_llm_config', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    provider: provider,
+                    api_key: apiKey,
+                    model: model,
+                    base_url: baseUrl
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ LLM configuration saved!');
+                    loadLLMStatus();
+                } else {
+                    alert('❌ Failed to save configuration: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('❌ Error saving configuration: ' + error.message);
+            });
+        }
+        
+        // Handle provider change to show/hide base URL field
+        document.addEventListener('DOMContentLoaded', function() {
+            const providerSelect = document.getElementById('llmProvider');
+            const baseUrlField = document.getElementById('llmBaseUrlField');
+            
+            if (providerSelect && baseUrlField) {
+                providerSelect.addEventListener('change', function() {
+                    if (this.value === 'local') {
+                        baseUrlField.style.display = 'block';
+                    } else {
+                        baseUrlField.style.display = 'none';
+                    }
+                });
+            }
+            
+            // Add event listeners to parser type radio buttons
+            const parserRadios = document.querySelectorAll('input[name="parserType"]');
+            parserRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    updateLLMConfigVisibility();
+                });
+            });
+            
+            // Add event listener to LLM provider dropdown
+            const llmProvider = document.getElementById('llmProvider');
+            if (llmProvider) {
+                llmProvider.addEventListener('change', function() {
+                    updateModelPlaceholder();
+                });
+            }
+        });
+        
         async function clearAllHistory() {
             if (!confirm('Clear all job history? This deletes local job metadata, results, and parsed documents.')) return;
             try {
                 const resp = await fetch('/jobs', { method: 'DELETE' });
-                const result = await resp.json();
+                
+                let result;
+                try {
+                    result = await resp.json();
+                } catch (jsonError) {
+                    console.error('JSON parsing error:', jsonError);
+                    console.error('Response text:', await resp.text());
+                    throw new Error('Invalid response format from server');
+                }
                 if (resp.ok && result.success) {
                     loadDocuments();
                 } else {

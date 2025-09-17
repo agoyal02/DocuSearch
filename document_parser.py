@@ -9,6 +9,7 @@ import requests
 from datetime import datetime
 from typing import Dict, List, Tuple, Optional, Any
 from config import Config
+from llm_service import llm_service
 
 
 class DocumentParser:
@@ -69,7 +70,7 @@ class DocumentParser:
         except Exception as e:
             return False, "validation_error", f"Error validating file: {str(e)}"
     
-    def parse_document(self, filepath: str, metadata_options: List[str] = None, job_id: str = None) -> Dict[str, Any]:
+    def parse_document(self, filepath: str, metadata_options: List[str] = None, job_id: str = None, parser_type: str = 'local') -> Dict[str, Any]:
         """
         Parse a document using GROBID for PDFs and appropriate libraries for other formats
         
@@ -77,6 +78,7 @@ class DocumentParser:
             filepath: Path to the document to parse
             metadata_options: List of metadata fields to extract
             job_id: Optional job ID for tracking
+            parser_type: Parser type ('local', 'llm', 'auto')
             
         Returns:
             Dictionary containing parsed document data
@@ -88,7 +90,17 @@ class DocumentParser:
         mime_type = magic.from_file(filepath, mime=True)
         file_type = self.supported_types.get(mime_type, 'Unknown')
         
-        # Parse based on file type
+        # Handle different parser types
+        if parser_type == 'llm' and file_type == 'PDF':
+            return self._parse_pdf_with_llm(filepath, metadata_options, job_id)
+        elif parser_type == 'auto' and file_type == 'PDF':
+            return self._parse_pdf_with_auto(filepath, metadata_options, job_id)
+        else:
+            # Use local parsing
+            return self._parse_with_local(filepath, file_type, metadata_options, job_id)
+    
+    def _parse_with_local(self, filepath: str, file_type: str, metadata_options: List[str], job_id: str = None) -> Dict[str, Any]:
+        """Parse document using local parsers"""
         if file_type == 'PDF':
             return self._parse_pdf_with_grobid(filepath, metadata_options, job_id)
         elif file_type == 'DOCX':
@@ -99,6 +111,74 @@ class DocumentParser:
             return self._parse_html(filepath, metadata_options, job_id)
         else:
             raise ValueError(f"Unsupported file type: {file_type}")
+    
+    def _parse_pdf_with_llm(self, filepath: str, metadata_options: List[str], job_id: str = None) -> Dict[str, Any]:
+        """Parse PDF using LLM for metadata extraction"""
+        try:
+            # First, extract text using local PDF parser
+            local_result = self._parse_pdf_with_grobid(filepath, [], job_id)
+            
+            # Extract first page text for LLM
+            first_page_text = self._extract_first_page_text(filepath)
+            
+            if not first_page_text:
+                # Fallback to local parsing if no text extracted
+                return self._parse_pdf_with_grobid(filepath, metadata_options, job_id)
+            
+            # Use LLM for metadata extraction
+            llm_metadata = llm_service.extract_metadata(first_page_text, metadata_options)
+            
+            # Combine local content with LLM metadata
+            result = local_result.copy()
+            result.update(llm_metadata)
+            result['parser'] = 'llm'
+            
+            return result
+            
+        except Exception as e:
+            # Fallback to local parsing on LLM error
+            print(f"LLM parsing failed, falling back to local: {str(e)}")
+            local_result = self._parse_pdf_with_grobid(filepath, metadata_options, job_id)
+            local_result['parser'] = 'llm_fallback'
+            local_result['llm_error'] = str(e)
+            return local_result
+    
+    def _parse_pdf_with_auto(self, filepath: str, metadata_options: List[str], job_id: str = None) -> Dict[str, Any]:
+        """Parse PDF with automatic LLM + local fallback"""
+        try:
+            # Try LLM first
+            return self._parse_pdf_with_llm(filepath, metadata_options, job_id)
+        except Exception as e:
+            # Fallback to local parsing
+            print(f"Auto parsing: LLM failed, using local: {str(e)}")
+            local_result = self._parse_pdf_with_grobid(filepath, metadata_options, job_id)
+            local_result['parser'] = 'auto_local'
+            local_result['llm_error'] = str(e)
+            return local_result
+    
+    def _extract_first_page_text(self, filepath: str) -> str:
+        """Extract text from first page of PDF for LLM processing"""
+        try:
+            import PyPDF2
+            
+            with open(filepath, 'rb') as file:
+                pdf_reader = PyPDF2.PdfReader(file)
+                
+                if len(pdf_reader.pages) == 0:
+                    return ""
+                
+                # Extract text from first page
+                first_page = pdf_reader.pages[0]
+                text = first_page.extract_text()
+                
+                # Clean up text
+                text = text.strip()
+                
+                return text
+                
+        except Exception as e:
+            print(f"Failed to extract first page text: {str(e)}")
+            return ""
     
     def _parse_pdf_with_grobid(self, filepath: str, metadata_options: List[str], job_id: str = None) -> Dict[str, Any]:
         """
