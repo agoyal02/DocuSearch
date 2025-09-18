@@ -629,12 +629,9 @@ curl http://localhost:5000/grobid_status
 | Script | Platform | Description |
 |--------|----------|-------------|
 | `start_all_services.sh` | Linux/macOS | Full-featured service manager |
-| `start_all_services.bat` | Windows | Windows equivalent with full features |
 | `quick_start.sh` | Linux/macOS | Simple, fast startup |
 | `install_pip.sh` | Linux/macOS | Standalone pip installation |
-| `install_pip.bat` | Windows | Windows pip installation |
 | `install_docker.sh` | Linux/macOS | Standalone Docker installation |
-| `install_docker.bat` | Windows | Windows Docker installation |
 | `Makefile` | All | Make commands for all operations |
 
 ### Script Features
